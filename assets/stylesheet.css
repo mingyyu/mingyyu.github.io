@@ -1,0 +1,38 @@
+/* Add a background color to the body of the website */
+body {
+  background-color: #f0f0f0;
+}
+
+/* Add some basic styling to the heading tags */
+h1, h2, h3, h4, h5, h6 {
+  color: #333;
+  margin: 20px 0;
+}
+
+/* Add some basic styling to the links */
+a {
+  color: blue;
+  text-decoration: none;
+}
+
+a:hover {
+  color: purple;
+  text-decoration: underline;
+}
+
+/* Add some basic styling to the lists */
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+/* Add some basic styling to the images */
+img {
+  max-width: 100%;
+}
+
+/* Add a class for a container to center the website */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
