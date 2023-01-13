@@ -1,30 +1,58 @@
 /* Add some basic styling to the table */
 table {
-    border-collapse: collapse;
-    margin: 20px auto;
+  margin: 0 auto;
+  width: 50%;
+  height: 50%;
+  min-width: 300px;
+  min-height: 300px;
+  table-layout: fixed;
 }
 
 /* Add some basic styling to the table cells */
 .square {
-    width: 50px;
-    height: 50px;
+  width: calc(33.33% - 2px);
+  /*height: calc(33.33% - 2px);*/
+  padding: calc(11.11% - 2px);
+  border: 1px solid #ccc;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 30px;
+  font-weight: bold;
+}
+/*flex-basis: calc(33.33% - 2px);
     border: 1px solid #ccc;
     text-align: center;
     vertical-align: middle;
     font-size: 30px;
     font-weight: bold;
+    box-sizing: border-box;
+    display: flex; */
+
+/* Add hover effect to the table cells */
+.square:hover {
+  box-shadow: 0 0 5px #ccc;
+  cursor: pointer;
 }
 
 /* Add some basic styling to the reset button */
 #reset {
-    margin: 20px auto;
-    padding: 10px 20px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    cursor: pointer;
+  margin: 20px auto;
+  padding: 10px 20px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  width: 50%;
+  min-width: 150px;
 }
 
 #reset:hover {
-    background-color: #3e8e41;
+  background-color: #3e8e41;
+}
+
+/* Add some basic styling to the body */
+body {
+  margin: 0;
+  padding: 0;
+  text-align: center;
 }
