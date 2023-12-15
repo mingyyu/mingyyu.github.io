@@ -1,29 +1,27 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <title>Tic-Tac-Toe</title>
-    <link rel="stylesheet" href="/assets/style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Home</title>
+    <!--<link rel="stylesheet" href="style.css" />-->
   </head>
   <body>
-    <h1>Tic-Tac-Toe</h1>
-    <table>
-      <tr>
-        <td class="square"></td>
-        <td class="square"></td>
-        <td class="square"></td>
-      </tr>
-      <tr>
-        <td class="square"></td>
-        <td class="square"></td>
-        <td class="square"></td>
-      </tr>
-      <tr>
-        <td class="square"></td>
-        <td class="square"></td>
-        <td class="square"></td>
-      </tr>
-    </table>
-    <button id="reset">Reset</button>
+    <h1>Home</h1>
+    <label for="inputField"><i>Password Game</i></label>
+    <input type="text" id="inputField" placeholder="Type here" />
+
+    <button onclick="checkInput()">Submit</button>
+
+    <div id="result"></div>
+    <h2>Games (links):</h2>
+    <form action="https://mingyyu.github.io/wordle-lookalike/" target="_blank">
+      <button type="submit">wordle-lookalike</button>
+    </form>
+    <form action="https://mingyyu.github.io/simple-tictactoe/" target="_blank">
+      <button type="submit">tic-tac-toe</button>
+    </form>
+    <script src="./script.js"></script>
   </body>
-  <script src="/assets/script.js"></script>
 </html>
