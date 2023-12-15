@@ -1,9 +1,9 @@
 function checkInput() {
   var inputValue = document.getElementById("inputField").value;
 
-  if (inputValue === "5kKXX") {
+  if (inputValue === "EGva76XFr5fjCt4qKSebPpHd") {
     document.getElementById("result").innerHTML =
-      "<h4>EGva76XFr5fjCt4qKSebPpHd</h4>";
+      "<h4>Congratulations! You cracked the password.</h4>";
   } else {
     document.getElementById("result").innerHTML = "<p>WRONG PASSWORD</p>";
   }
