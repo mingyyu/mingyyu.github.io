@@ -1,360 +1,313 @@
 /**
- * Ming Yu Portfolio - Interactive Script
- * Features: Particle system, scroll animations, magnetic hover, typing effect
+ * Ming Yu — Index
+ *
+ * Two things happen on this page:
+ *   1. The name flips into place once, on load.
+ *   2. The six empty tiles under it are a real guessing game. Solving it
+ *      unlocks the notes section further down.
+ *
+ * That's the whole script. Everything else is CSS.
  */
 
-// ===================================
-// TYPING EFFECT
-// ===================================
-class TypingEffect {
-  constructor(elementId) {
-    this.element = document.getElementById(elementId);
-    this.phrases = [
-      "Creative 🧐",
-      "Full-stack is my playground",
-      "Bridging logic with design 🎨",
-      "CSS… still figuring it out 😅",
-      "Colorful? Maybe a bit 😎",
-      "64GB RAM — for serious coding 💻"
-    ];
-    this.currentPhrase = 0;
-    this.currentChar = 0;
-    this.isDeleting = false;
-    this.typeSpeed = 80;
-    this.deleteSpeed = 40;
-    this.pauseEnd = 2000;
-    this.pauseStart = 500;
+const ANSWER = 'WORDLE';
+const LEN = ANSWER.length;
+const STORE_KEY = 'mingyu.notes.unlocked';
+const FLIP_MS = 500;
+const STAGGER_MS = 90;
 
-    // Shuffle phrases on load for variety
-    this.shuffleArray(this.phrases);
-    this.type();
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* -------------------------------------------------------------------------
+   Storage — never let a locked-down browser break the page
+   ------------------------------------------------------------------------- */
+function readUnlocked() {
+  try {
+    return localStorage.getItem(STORE_KEY) === '1';
+  } catch {
+    return false;
   }
+}
 
-  shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
+function writeUnlocked() {
+  try {
+    localStorage.setItem(STORE_KEY, '1');
+  } catch {
+    /* private mode, blocked cookies — the unlock just won't persist */
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Tiles
+   ------------------------------------------------------------------------- */
+const FILLS = {
+  ink: 'tile--ink',
+  jade: 'tile--jade',
+  marigold: 'tile--marigold',
+  slate: 'tile--slate'
+};
+
+function clearFill(tile) {
+  tile.classList.remove('is-filled', 'is-flipping', ...Object.values(FILLS));
+}
+
+/** Flip one tile to a fill state. Resolves when it has landed. */
+function flipTile(tile, fill, delay) {
+  return new Promise(resolve => {
+    clearFill(tile);
+    tile.classList.add(FILLS[fill]);
+
+    if (reducedMotion) {
+      tile.classList.add('is-filled');
+      resolve();
+      return;
     }
-  }
 
-  type() {
-    const current = this.phrases[this.currentPhrase];
+    window.setTimeout(() => {
+      tile.addEventListener('animationend', function done() {
+        tile.removeEventListener('animationend', done);
+        tile.classList.remove('is-flipping');
+        tile.classList.add('is-filled');
+        resolve();
+      });
+      tile.classList.add('is-flipping');
+    }, delay);
+  });
+}
 
-    if (this.isDeleting) {
-      this.element.textContent = current.substring(0, this.currentChar - 1);
-      this.currentChar--;
+function flipRow(tiles, fills) {
+  return Promise.all(
+    tiles.map((tile, i) => flipTile(tile, fills[i], i * STAGGER_MS))
+  );
+}
+
+/* -------------------------------------------------------------------------
+   The name — one orchestrated entrance, then stillness
+   ------------------------------------------------------------------------- */
+function revealName() {
+  const tiles = Array.from(document.querySelectorAll('.tile--name'));
+  if (!tiles.length) return;
+  tiles.forEach((tile, i) => {
+    flipTile(tile, 'ink', 200 + i * 70);
+  });
+}
+
+/* -------------------------------------------------------------------------
+   Scoring — standard rules, including repeated letters
+   ------------------------------------------------------------------------- */
+function scoreGuess(guess, answer) {
+  const result = new Array(LEN).fill('slate');
+  const unmatched = new Map();
+
+  for (let i = 0; i < LEN; i++) {
+    if (guess[i] === answer[i]) {
+      result[i] = 'jade';
     } else {
-      this.element.textContent = current.substring(0, this.currentChar + 1);
-      this.currentChar++;
+      unmatched.set(answer[i], (unmatched.get(answer[i]) || 0) + 1);
     }
-
-    let timeout = this.isDeleting ? this.deleteSpeed : this.typeSpeed;
-
-    // Finished typing
-    if (!this.isDeleting && this.currentChar === current.length) {
-      timeout = this.pauseEnd;
-      this.isDeleting = true;
-    }
-
-    // Finished deleting
-    if (this.isDeleting && this.currentChar === 0) {
-      this.isDeleting = false;
-      this.currentPhrase = (this.currentPhrase + 1) % this.phrases.length;
-      timeout = this.pauseStart;
-    }
-
-    setTimeout(() => this.type(), timeout);
   }
+
+  for (let i = 0; i < LEN; i++) {
+    if (result[i] === 'jade') continue;
+    const left = unmatched.get(guess[i]) || 0;
+    if (left > 0) {
+      result[i] = 'marigold';
+      unmatched.set(guess[i], left - 1);
+    }
+  }
+
+  return result;
 }
 
-// ===================================
-// PARTICLE SYSTEM
-// ===================================
-class ParticleSystem {
-  constructor(canvas) {
-    this.canvas = canvas;
-    this.ctx = canvas.getContext('2d');
-    this.particles = [];
-    this.mouse = { x: null, y: null };
-    this.particleCount = window.innerWidth < 768 ? 40 : 80;
+/* -------------------------------------------------------------------------
+   The puzzle
+   ------------------------------------------------------------------------- */
+class Puzzle {
+  constructor(root) {
+    this.root = root;
+    this.row = root.querySelector('#puzzle-row');
+    this.input = root.querySelector('#puzzle-input');
+    this.status = root.querySelector('#puzzle-status');
+    this.tiles = Array.from(this.row.querySelectorAll('.tile--slot'));
 
-    this.resize();
-    this.init();
-    this.bindEvents();
-    this.animate();
+    this.busy = false;
+    this.showingFeedback = false;
+    this.solved = false;
+
+    this.input.addEventListener('input', () => this.onInput());
+    this.input.addEventListener('keydown', e => this.onKeydown(e));
+    this.row.addEventListener('mousedown', e => {
+      e.preventDefault();
+      this.input.focus();
+    });
+
+    if (readUnlocked()) this.restoreSolved();
   }
 
-  resize() {
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = window.innerHeight;
+  get value() {
+    return this.input.value;
   }
 
-  init() {
-    this.particles = [];
-    for (let i = 0; i < this.particleCount; i++) {
-      this.particles.push(this.createParticle());
+  /* Mirror the input into the tiles, and mark where the next letter lands.
+     On a full row the caret stays on the last tile so focus is always visible. */
+  paint() {
+    const chars = this.value.split('');
+    const caret = Math.min(chars.length, LEN - 1);
+    this.tiles.forEach((tile, i) => {
+      tile.textContent = chars[i] || '';
+      tile.classList.toggle('tile--active', i === caret && !this.solved);
+    });
+  }
+
+  resetTiles() {
+    this.tiles.forEach(clearFill);
+    this.showingFeedback = false;
+  }
+
+  onInput() {
+    if (this.busy || this.solved) return;
+
+    // Letters only, uppercase, six at most.
+    const cleaned = this.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, LEN);
+    if (cleaned !== this.value) this.input.value = cleaned;
+
+    // A previous guess is still coloured on screen — clear it as they retype.
+    if (this.showingFeedback) this.resetTiles();
+
+    this.paint();
+  }
+
+  onKeydown(e) {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    if (this.busy || this.solved) return;
+
+    if (this.value.length < LEN) {
+      this.say(`${LEN} letters. You have ${this.value.length}.`);
+      this.nudge();
+      return;
     }
+    this.submit();
   }
 
-  createParticle() {
-    return {
-      x: Math.random() * this.canvas.width,
-      y: Math.random() * this.canvas.height,
-      size: Math.random() * 2 + 1,
-      speedX: (Math.random() - 0.5) * 0.5,
-      speedY: (Math.random() - 0.5) * 0.5,
-      opacity: Math.random() * 0.5 + 0.2
-    };
+  nudge() {
+    if (reducedMotion) return;
+    this.row.classList.remove('is-wrong');
+    void this.row.offsetWidth; // restart the animation
+    this.row.classList.add('is-wrong');
+    window.setTimeout(() => this.row.classList.remove('is-wrong'), 450);
   }
 
-  bindEvents() {
-    window.addEventListener('resize', () => {
-      this.resize();
-      this.init();
-    });
-
-    window.addEventListener('mousemove', (e) => {
-      this.mouse.x = e.clientX;
-      this.mouse.y = e.clientY;
-    });
-
-    window.addEventListener('mouseout', () => {
-      this.mouse.x = null;
-      this.mouse.y = null;
-    });
+  say(text) {
+    this.status.textContent = text;
+    this.status.classList.remove('is-win');
   }
 
-  animate() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  async submit() {
+    const guess = this.value;
+    this.busy = true;
+    this.say('');
+    this.tiles.forEach(t => t.classList.remove('tile--active'));
 
-    this.particles.forEach((p, i) => {
-      // Update position
-      p.x += p.speedX;
-      p.y += p.speedY;
+    const fills = scoreGuess(guess, ANSWER);
+    await flipRow(this.tiles, fills);
 
-      // Mouse interaction
-      if (this.mouse.x !== null && this.mouse.y !== null) {
-        const dx = this.mouse.x - p.x;
-        const dy = this.mouse.y - p.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+    this.busy = false;
 
-        if (dist < 150) {
-          const force = (150 - dist) / 150;
-          p.x -= dx * force * 0.02;
-          p.y -= dy * force * 0.02;
-        }
-      }
-
-      // Wrap around edges
-      if (p.x < 0) p.x = this.canvas.width;
-      if (p.x > this.canvas.width) p.x = 0;
-      if (p.y < 0) p.y = this.canvas.height;
-      if (p.y > this.canvas.height) p.y = 0;
-
-      // Draw particle
-      this.ctx.beginPath();
-      this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      this.ctx.fillStyle = `rgba(0, 212, 255, ${p.opacity})`;
-      this.ctx.fill();
-
-      // Draw connections
-      this.particles.slice(i + 1).forEach(p2 => {
-        const dx = p.x - p2.x;
-        const dy = p.y - p2.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-
-        if (dist < 120) {
-          this.ctx.beginPath();
-          this.ctx.moveTo(p.x, p.y);
-          this.ctx.lineTo(p2.x, p2.y);
-          this.ctx.strokeStyle = `rgba(0, 212, 255, ${0.15 * (1 - dist / 120)})`;
-          this.ctx.lineWidth = 0.5;
-          this.ctx.stroke();
-        }
-      });
-    });
-
-    requestAnimationFrame(() => this.animate());
-  }
-}
-
-// ===================================
-// SCROLL ANIMATIONS
-// ===================================
-class ScrollAnimations {
-  constructor() {
-    this.header = document.getElementById('sticky-header');
-    this.heroContent = document.querySelector('.hero-content');
-    this.cards = document.querySelectorAll('.project-card');
-    this.scrollIndicator = document.querySelector('.scroll-indicator');
-
-    this.bindEvents();
-    this.setupIntersectionObserver();
-  }
-
-  bindEvents() {
-    window.addEventListener('scroll', () => this.onScroll(), { passive: true });
-  }
-
-  onScroll() {
-    const scrollY = window.scrollY;
-    const windowHeight = window.innerHeight;
-
-    // Header visibility
-    if (scrollY > windowHeight * 0.5) {
-      this.header.classList.add('visible');
+    if (guess === ANSWER) {
+      this.win();
     } else {
-      this.header.classList.remove('visible');
-    }
-
-    // Hero parallax and fade
-    if (this.heroContent && scrollY < windowHeight) {
-      const progress = scrollY / windowHeight;
-      this.heroContent.style.transform = `translateY(${scrollY * 0.3}px) scale(${1 - progress * 0.15})`;
-      this.heroContent.style.opacity = 1 - progress * 1.2;
-    }
-
-    // Hide scroll indicator
-    if (this.scrollIndicator && scrollY > 100) {
-      this.scrollIndicator.style.opacity = '0';
-    } else if (this.scrollIndicator) {
-      this.scrollIndicator.style.opacity = '1';
+      this.showingFeedback = true;
+      this.say('Not it. Green is right and in place, amber is right but misplaced.');
+      this.nudge();
     }
   }
 
-  setupIntersectionObserver() {
-    const observerOptions = {
-      root: null,
-      rootMargin: '0px',
-      threshold: 0.1
-    };
+  win() {
+    this.solved = true;
+    this.root.classList.add('is-solved');
+    this.input.readOnly = true;
+    this.tiles.forEach(t => t.classList.remove('tile--active'));
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry, index) => {
-        if (entry.isIntersecting) {
-          // Staggered animation
-          setTimeout(() => {
-            entry.target.classList.add('visible');
-          }, index * 150);
-        }
-      });
-    }, observerOptions);
+    this.status.classList.add('is-win');
+    this.status.textContent = 'Correct. ';
+    const link = document.createElement('a');
+    link.href = '#about';
+    link.textContent = 'The notes are unlocked ↓';
+    this.status.appendChild(link);
 
-    this.cards.forEach(card => observer.observe(card));
-  }
-}
-
-// ===================================
-// MAGNETIC HOVER EFFECT
-// ===================================
-class MagneticHover {
-  constructor() {
-    this.cards = document.querySelectorAll('[data-tilt]');
-    this.bindEvents();
+    writeUnlocked();
+    unlockNote();
   }
 
-  bindEvents() {
-    this.cards.forEach(card => {
-      card.addEventListener('mousemove', (e) => this.onMouseMove(e, card));
-      card.addEventListener('mouseleave', (e) => this.onMouseLeave(e, card));
+  restoreSolved() {
+    this.solved = true;
+    this.root.classList.add('is-solved');
+    this.input.value = ANSWER;
+    this.input.readOnly = true;
+    this.tiles.forEach((tile, i) => {
+      tile.textContent = ANSWER[i];
+      tile.classList.add(FILLS.jade, 'is-filled');
     });
-  }
-
-  onMouseMove(e, card) {
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-
-    const rotateX = (y - centerY) / 20;
-    const rotateY = (centerX - x) / 20;
-
-    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-
-    // Update glow position
-    const glow = card.querySelector('.card-glow');
-    if (glow) {
-      const percentX = (x / rect.width) * 100;
-      const percentY = (y / rect.height) * 100;
-      card.style.setProperty('--mouse-x', `${percentX}%`);
-      card.style.setProperty('--mouse-y', `${percentY}%`);
-    }
-  }
-
-  onMouseLeave(e, card) {
-    card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+    this.status.classList.add('is-win');
+    this.status.textContent = 'Solved. The notes below are open.';
   }
 }
 
-// ===================================
-// SMOOTH SCROLL FOR NAV LINKS
-// ===================================
-class SmoothScroll {
-  constructor() {
-    this.links = document.querySelectorAll('a[href^="#"]');
-    this.bindEvents();
-  }
+/* -------------------------------------------------------------------------
+   The reward
+   ------------------------------------------------------------------------- */
+function unlockNote() {
+  const note = document.getElementById('note');
+  const locked = document.getElementById('note-locked');
+  const open = document.getElementById('note-open');
+  if (!note || !locked || !open) return;
 
-  bindEvents() {
-    this.links.forEach(link => {
-      link.addEventListener('click', (e) => {
-        const href = link.getAttribute('href');
-        if (href.startsWith('#')) {
-          e.preventDefault();
-          const target = document.querySelector(href);
-          if (target) {
-            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-        }
-      });
-    });
-  }
+  note.dataset.locked = 'false';
+  locked.hidden = true;
+  open.hidden = false;
 }
 
-// ===================================
-// INITIALIZE
-// ===================================
+/* -------------------------------------------------------------------------
+   Boot
+   ------------------------------------------------------------------------- */
 document.addEventListener('DOMContentLoaded', () => {
-  // Initialize typing effect
-  new TypingEffect('typed-text');
+  revealName();
 
-  // Initialize particle system
-  const canvas = document.getElementById('particle-canvas');
-  if (canvas) {
-    new ParticleSystem(canvas);
-  }
+  const root = document.getElementById('puzzle');
+  if (!root) return;
+  const puzzle = new Puzzle(root);
 
-  // Initialize scroll animations
-  new ScrollAnimations();
-
-  // Initialize magnetic hover
-  new MagneticHover();
-
-  // Initialize smooth scroll
-  new SmoothScroll();
-
-  // Add transition class after page load for smooth animations
-  setTimeout(() => {
-    document.body.classList.add('loaded');
-  }, 100);
-});
-
-// Disable particle canvas on scroll for performance (optional)
-let ticking = false;
-window.addEventListener('scroll', () => {
-  if (!ticking) {
-    window.requestAnimationFrame(() => {
-      const canvas = document.getElementById('particle-canvas');
-      if (canvas) {
-        const scrollY = window.scrollY;
-        const windowHeight = window.innerHeight;
-        // Fade out particles as user scrolls
-        canvas.style.opacity = Math.max(0, 0.6 - (scrollY / windowHeight) * 0.8);
-      }
-      ticking = false;
+  // "Take me to the tiles"
+  const jump = document.getElementById('note-jump');
+  if (jump) {
+    jump.addEventListener('click', () => {
+      root.scrollIntoView({
+        behavior: reducedMotion ? 'auto' : 'smooth',
+        block: 'center'
+      });
+      window.setTimeout(() => puzzle.input.focus({ preventScroll: true }), reducedMotion ? 0 : 500);
     });
-    ticking = true;
   }
-}, { passive: true });
+
+  // Start typing anywhere while the puzzle is on screen and it picks it up.
+  let puzzleVisible = false;
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(
+      ([entry]) => { puzzleVisible = entry.isIntersecting; },
+      { threshold: 0.4 }
+    ).observe(root);
+  }
+
+  document.addEventListener('keydown', e => {
+    if (!puzzleVisible || puzzle.solved) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (document.activeElement !== document.body) return;
+    if (!/^[a-zA-Z]$/.test(e.key)) return;
+
+    puzzle.input.focus({ preventScroll: true });
+    // The keypress that got us here still needs to land.
+    e.preventDefault();
+    puzzle.input.value = (puzzle.input.value + e.key).slice(0, LEN);
+    puzzle.onInput();
+  });
+});
