@@ -1,0 +1,43 @@
+# ---------------------------------------------------------------------------
+# Ming Yu — Index
+#
+# GitHub Pages runs Jekyll on every push. This file exists for one reason:
+# to turn the _blog/ folder into a set of pages. Everything that was already
+# here — index.html, style.css, script.js — has no front matter, so Jekyll
+# copies it through byte for byte and never touches it.
+# ---------------------------------------------------------------------------
+
+title: Ming Yu — Index
+description: >-
+  Undergraduate in Singapore building full-stack systems. A library that
+  tracks real loans, an empire game that runs inside a Telegram chat, and a
+  few small things in between.
+url: https://mingyyu.github.io
+baseurl: ""
+
+# Drop a .md file in _blog/ and it becomes a page at /blog/<filename>/
+collections:
+  blog:
+    output: true
+    permalink: /blog/:name/
+
+# Defaults, so a new post only needs a title and a date.
+defaults:
+  - scope:
+      path: ""
+      type: blog
+    values:
+      layout: post
+      accent: jade
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+  hard_wrap: false
+
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - vendor

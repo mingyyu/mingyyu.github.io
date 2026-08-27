@@ -1,0 +1,25 @@
+---
+permalink: /blog/feed.xml
+layout: null
+---
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Ming Yu — Blog</title>
+  <link href="{{ '/blog/feed.xml' | absolute_url }}" rel="self" />
+  <link href="{{ '/blog/' | absolute_url }}" />
+  <updated>{{ site.time | date_to_xmlschema }}</updated>
+  <id>{{ '/blog/' | absolute_url }}</id>
+  <author><name>Ming Yu</name></author>
+  {%- assign posts = site.blog | sort: 'date' | reverse %}
+  {%- for post in posts %}
+  <entry>
+    <title>{{ post.title | xml_escape }}</title>
+    <link href="{{ post.url | absolute_url }}" />
+    <id>{{ post.url | absolute_url }}</id>
+    <published>{{ post.date | date_to_xmlschema }}</published>
+    <updated>{{ post.date | date_to_xmlschema }}</updated>
+    <summary>{{ post.description | default: post.excerpt | strip_html | strip_newlines | xml_escape }}</summary>
+    <content type="html">{{ post.content | xml_escape }}</content>
+  </entry>
+  {%- endfor %}
+</feed>

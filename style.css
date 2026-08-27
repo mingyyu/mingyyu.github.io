@@ -1000,3 +1000,373 @@ button {
     scroll-behavior: auto;
   }
 }
+
+/* --------------------------------------------------------------------------
+   16. BLOG
+
+   Append-only. The index at /blog/ reuses the .index / .entry component
+   from Work and Games unchanged — the only new piece there is the title
+   link. Everything below that styles markdown output, which is the one
+   thing the rest of the site never had to render.
+   -------------------------------------------------------------------------- */
+.entry__link {
+  color: inherit;
+  text-decoration: none;
+  background-image: linear-gradient(var(--ultramarine), var(--ultramarine));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0 2px;
+  transition: background-size .22s var(--ease), color .18s var(--ease);
+}
+
+.entry__link:hover {
+  color: var(--ultramarine);
+  background-size: 100% 2px;
+}
+
+/* ---- Post header ---- */
+.post__eyebrow {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  margin-block-end: 1.25rem;
+}
+
+.post__eyebrow a {
+  color: var(--ultramarine);
+  text-decoration: none;
+}
+
+.post__eyebrow a:hover {
+  text-decoration: underline;
+  text-underline-offset: .25em;
+}
+
+.post__title {
+  max-inline-size: 20ch;
+  font-size: clamp(2rem, 1.4rem + 3vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -.02em;
+  text-wrap: balance;
+}
+
+.post__lede {
+  margin-block-start: 1.25rem;
+}
+
+.post__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  margin-block-start: 1.5rem;
+  padding-block-end: 1.5rem;
+  border-block-end: 2px solid var(--ink);
+  font-family: var(--mono);
+  font-size: .625rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+.post__reading {
+  margin-inline-end: .5rem;
+}
+
+.post__tag {
+  padding: .25rem .5rem;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: var(--paper-well);
+  letter-spacing: .01em;
+  text-transform: none;
+  color: var(--ink-soft);
+}
+
+/* ---- Markdown body ---- */
+.post__body {
+  max-inline-size: 68ch;
+  margin-block-start: clamp(2rem, 4vw, 3rem);
+  color: var(--ink-soft);
+}
+
+.post__body>*+* {
+  margin-block-start: 1.125rem;
+}
+
+.post__body h2,
+.post__body h3,
+.post__body h4 {
+  color: var(--ink);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -.01em;
+  text-wrap: balance;
+}
+
+.post__body h2 {
+  margin-block-start: clamp(2.25rem, 4vw, 3rem);
+  font-size: clamp(1.375rem, 1.2rem + .8vw, 1.75rem);
+}
+
+.post__body h3 {
+  margin-block-start: 2rem;
+  font-size: 1.1875rem;
+}
+
+.post__body h4 {
+  margin-block-start: 1.75rem;
+  font-size: 1rem;
+  font-family: var(--mono);
+  font-weight: 500;
+  letter-spacing: .02em;
+}
+
+.post__body p {
+  text-wrap: pretty;
+}
+
+.post__body a {
+  color: var(--ultramarine);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .2em;
+}
+
+.post__body a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.post__body strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.post__body ul,
+.post__body ol {
+  padding-inline-start: 1.375rem;
+}
+
+.post__body ul {
+  list-style: square;
+}
+
+.post__body ol {
+  list-style: decimal;
+}
+
+.post__body li+li {
+  margin-block-start: .4rem;
+}
+
+.post__body li::marker {
+  color: var(--slate);
+}
+
+.post__body blockquote {
+  padding-inline-start: clamp(1rem, 3vw, 1.5rem);
+  border-inline-start: 3px solid var(--marigold);
+  font-size: 1.0625rem;
+  color: var(--ink);
+}
+
+.post__body hr {
+  block-size: 0;
+  margin-block: clamp(2rem, 4vw, 3rem);
+  border: 0;
+  border-block-start: 1px solid var(--rule);
+}
+
+.post__body img {
+  display: block;
+  max-inline-size: 100%;
+  block-size: auto;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+}
+
+.post__body figcaption {
+  margin-block-start: .5rem;
+  font-family: var(--mono);
+  font-size: .625rem;
+  letter-spacing: .05em;
+  color: var(--ink-mute);
+}
+
+/* Code — inline reads as a token, blocks as a slab of ink */
+.post__body code {
+  padding: .1em .35em;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: var(--paper-well);
+  font-family: var(--mono);
+  font-size: .8125em;
+  color: var(--ink);
+}
+
+.post__body pre {
+  overflow-x: auto;
+  padding: clamp(.875rem, 2vw, 1.25rem);
+  border-radius: 3px;
+  background: var(--ink);
+  -webkit-overflow-scrolling: touch;
+}
+
+.post__body pre code {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  font-size: .75rem;
+  line-height: 1.7;
+  color: #E6E4DC;
+}
+
+.post__body .highlight {
+  border-radius: 3px;
+}
+
+/* Rouge tokens, tuned to the site palette on the ink ground */
+.post__body .highlight .c,
+.post__body .highlight .c1,
+.post__body .highlight .cm { color: #8B8B84; font-style: italic; }
+.post__body .highlight .k,
+.post__body .highlight .kd,
+.post__body .highlight .kn,
+.post__body .highlight .kc { color: #E0A94A; }
+.post__body .highlight .s,
+.post__body .highlight .s1,
+.post__body .highlight .s2,
+.post__body .highlight .sb { color: #7FC9A4; }
+.post__body .highlight .n,
+.post__body .highlight .nx { color: #E6E4DC; }
+.post__body .highlight .nf,
+.post__body .highlight .nc { color: #93A5FF; }
+.post__body .highlight .m,
+.post__body .highlight .mi,
+.post__body .highlight .mf { color: #D9A0C8; }
+.post__body .highlight .o,
+.post__body .highlight .p { color: #B5B3AA; }
+
+/* Tables — same ruled treatment as .stack */
+.post__body .post__table-wrap,
+.post__body table {
+  inline-size: 100%;
+}
+
+.post__body table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: .9375rem;
+}
+
+.post__body th,
+.post__body td {
+  padding: .625rem .875rem;
+  border-block-end: 1px solid var(--rule);
+  text-align: start;
+  vertical-align: top;
+}
+
+.post__body th {
+  border-block-end: 2px solid var(--ink);
+  font-family: var(--mono);
+  font-size: .625rem;
+  font-weight: 500;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.post__body tr:last-child td {
+  border-block-end: 0;
+}
+
+.post__body sup a,
+.post__body .footnotes {
+  font-size: .875rem;
+}
+
+.post__body .footnotes {
+  margin-block-start: clamp(2rem, 4vw, 3rem);
+  padding-block-start: 1.25rem;
+  border-block-start: 1px solid var(--rule);
+  color: var(--ink-mute);
+}
+
+/* ---- Post footer ---- */
+.post__nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem clamp(1rem, 3vw, 2.5rem);
+  margin-block-start: clamp(3rem, 6vw, 4.5rem);
+  padding-block-start: 1.75rem;
+  border-block-start: 2px solid var(--ink);
+}
+
+.post__nav-link {
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.post__nav-link--older {
+  text-align: end;
+  grid-column: 2;
+}
+
+.post__nav-key {
+  font-family: var(--mono);
+  font-size: .625rem;
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+.post__nav-title {
+  font-size: 1.0625rem;
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+.post__nav-link:hover .post__nav-title {
+  color: var(--ultramarine);
+}
+
+.post__back {
+  margin-block-start: 2rem;
+  font-family: var(--mono);
+  font-size: .6875rem;
+  letter-spacing: .05em;
+}
+
+.post__back a {
+  color: var(--ultramarine);
+  text-decoration: none;
+}
+
+.post__back a::before {
+  content: "\2190\00a0";
+}
+
+.post__back a:hover {
+  text-decoration: underline;
+  text-underline-offset: .25em;
+}
+
+@media (max-width: 40rem) {
+  .post__nav {
+    grid-template-columns: 1fr;
+  }
+
+  .post__nav-link--older {
+    grid-column: 1;
+    text-align: start;
+  }
+}

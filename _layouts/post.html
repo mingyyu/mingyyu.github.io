@@ -1,0 +1,65 @@
+---
+layout: base
+og_type: article
+---
+
+{%- assign posts = site.blog | sort: 'date' | reverse -%}
+{%- for p in posts -%}
+  {%- if p.url == page.url -%}{%- assign idx = forloop.index0 -%}{%- endif -%}
+{%- endfor -%}
+{%- assign newer_i = idx | minus: 1 -%}
+{%- assign older_i = idx | plus: 1 -%}
+{%- if idx > 0 -%}{%- assign newer = posts[newer_i] -%}{%- endif -%}
+{%- if older_i < posts.size -%}{%- assign older = posts[older_i] -%}{%- endif -%}
+
+<article class="section post">
+  <div class="wrap">
+
+    <p class="eyebrow post__eyebrow">
+      <a href="{{ '/blog/' | relative_url }}">Blog</a>
+      <span aria-hidden="true">&nbsp;/&nbsp;</span>
+      <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%-d %B %Y" }}</time>
+    </p>
+
+    <h1 class="post__title">{{ page.title }}</h1>
+
+    {%- if page.description %}
+    <p class="lede post__lede">{{ page.description }}</p>
+    {%- endif %}
+
+    <p class="post__meta">
+      <span class="post__reading">{{ content | strip_html | number_of_words | divided_by: 200.0 | ceil }} min read</span>
+      {%- if page.tags and page.tags.size > 0 -%}
+      {%- for tag in page.tags %}<span class="post__tag">{{ tag }}</span>{% endfor -%}
+      {%- endif %}
+    </p>
+
+    <div class="post__body">
+      {{ content }}
+    </div>
+
+    {%- if newer or older %}
+    <nav class="post__nav" aria-label="More posts">
+      {%- if newer %}
+      <a class="post__nav-link" href="{{ newer.url | relative_url }}">
+        <span class="post__nav-key">&larr; Newer</span>
+        <span class="post__nav-title">{{ newer.title }}</span>
+      </a>
+      {%- else %}
+      <span></span>
+      {%- endif %}
+      {%- if older %}
+      <a class="post__nav-link post__nav-link--older" href="{{ older.url | relative_url }}">
+        <span class="post__nav-key">Older &rarr;</span>
+        <span class="post__nav-title">{{ older.title }}</span>
+      </a>
+      {%- endif %}
+    </nav>
+    {%- endif %}
+
+    <p class="post__back">
+      <a href="{{ '/blog/' | relative_url }}">All posts</a>
+    </p>
+
+  </div>
+</article>
