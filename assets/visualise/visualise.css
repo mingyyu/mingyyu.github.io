@@ -1,0 +1,1211 @@
+/* ==========================================================================
+   Visualise — scroll-driven explainers
+
+   Builds on style.css and borrows everything it can: the paper, the ink,
+   the two faces, and the tile. The tile's colours keep the meanings they
+   already have on the front page — marigold is "in play", jade is "done",
+   slate is "set aside" — so a reader who has solved the hero puzzle already
+   knows how to read a sort.
+
+   The one new motif is the dashed box: a recursive call you are asked to
+   trust. It is the same dashed well as the locked note on the front page,
+   and for the same reason — something is in there, and you'll see it later.
+   ========================================================================== */
+
+:root {
+  --wish-rule: #8C8778;
+  --tile-rule: #A29D8B;
+  --stage-h: 50vh;
+  --code-bg: var(--ink);
+  --code-fg: #E6E4DC;
+}
+
+@supports (height: 1svh) {
+  :root {
+    --stage-h: 50svh;
+  }
+}
+
+.visually-hidden {
+  position: absolute !important;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   1. HEADER & HERO FIGURE
+   -------------------------------------------------------------------------- */
+.viz-head__title {
+  max-inline-size: 15ch;
+}
+
+.viz-head__lede {
+  max-inline-size: 50ch;
+}
+
+/* The whole page in one row: a head you handle, and a tail you trust. */
+.wishbox {
+  --tile-size: clamp(2rem, 7.2vw, 4rem);
+  --tile-gap: clamp(.25rem, .8vw, .5rem);
+  margin-block-start: clamp(2.25rem, 5vw, 3.5rem);
+}
+
+.wishbox__row {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--tile-gap) * 2);
+}
+
+.wishbox__wish {
+  position: relative;
+  display: flex;
+  gap: var(--tile-gap);
+  padding: var(--tile-gap);
+  border: 2px dashed var(--wish-rule);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--paper-well) 60%, transparent);
+}
+
+.wishbox__wish .tile {
+  --tile-bg: var(--paper-raised);
+  --tile-bd: var(--tile-rule);
+}
+
+.wishbox__label {
+  position: absolute;
+  inset-inline-start: -2px;
+  inset-block-start: calc(100% + .5rem);
+  font-family: var(--mono);
+  font-size: clamp(.625rem, .58rem + .2vw, .75rem);
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.wishbox__cap {
+  max-inline-size: 50ch;
+  margin-block-start: 2.75rem;
+  font-size: 1rem;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
+.viz-note {
+  margin-block-start: 1.5rem;
+  padding: 1rem 1.25rem;
+  border: 2px dashed var(--rule);
+  border-radius: 3px;
+  color: var(--ink-soft);
+}
+
+/* --------------------------------------------------------------------------
+   2. PROSE
+   -------------------------------------------------------------------------- */
+.viz-prose {
+  max-inline-size: 64ch;
+  margin-block-start: 1.75rem;
+}
+
+.viz-prose>*+* {
+  margin-block-start: 1.125rem;
+}
+
+.viz-prose p {
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
+.viz-prose sup,
+.viz-prose sub,
+.fig__cap sub {
+  line-height: 0;
+}
+
+.viz-h3 {
+  margin-block-start: clamp(2.75rem, 5vw, 3.75rem);
+  font-size: clamp(1.25rem, 1.1rem + .6vw, 1.5rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -.01em;
+}
+
+.viz-h3+.viz-prose {
+  margin-block-start: .75rem;
+}
+
+.viz-aside {
+  margin-block-start: 1rem;
+  font-size: .9375rem;
+  color: var(--ink-mute);
+}
+
+.viz-list {
+  padding-inline-start: 1.25rem;
+  list-style: square;
+  color: var(--ink-soft);
+}
+
+.viz-list li+li {
+  margin-block-start: .5rem;
+}
+
+.viz-list li::marker {
+  color: var(--slate);
+}
+
+/* Inline code, as the blog renders it */
+.viz-prose code,
+.viz-list code,
+.algo__lead code,
+.step code,
+.map code,
+.summary code {
+  padding: .08em .32em;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: var(--paper-well);
+  font-family: var(--mono);
+  font-size: .8em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* Split, wish, join — a real sequence, so it earns its numbers */
+.recipe {
+  display: grid;
+  gap: .75rem;
+  counter-reset: recipe;
+}
+
+.recipe li {
+  display: grid;
+  grid-template-columns: 1.625rem minmax(0, 1fr);
+  gap: .875rem;
+  align-items: baseline;
+  counter-increment: recipe;
+  color: var(--ink-soft);
+}
+
+.recipe li::before {
+  content: counter(recipe);
+  display: grid;
+  place-items: center;
+  inline-size: 1.625rem;
+  block-size: 1.625rem;
+  border-radius: 2px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--mono);
+  font-size: .6875rem;
+  font-weight: 700;
+  line-height: 1;
+  transform: translateY(.3rem);
+}
+
+.recipe strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   3. THE MAP — four sorts, two choices
+   -------------------------------------------------------------------------- */
+.map {
+  display: grid;
+  margin-block-start: 1.5rem;
+  border-block: 2px solid var(--ink);
+}
+
+.map__row {
+  display: grid;
+  grid-template-columns: minmax(10rem, 14rem) minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.map__row+.map__row {
+  border-block-start: 1px solid var(--rule);
+}
+
+.map__colhead {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  padding: .875rem 1rem;
+  border-inline-start: 1px solid var(--rule);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.map__glyph {
+  flex: none;
+  inline-size: 1.375rem;
+  block-size: 1.375rem;
+  fill: var(--ink);
+}
+
+.map__rowhead {
+  display: flex;
+  gap: .75rem;
+  padding: 1.125rem 1rem 1.125rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.map__rowhead em {
+  display: block;
+  margin-block-start: .375rem;
+  font-size: .875rem;
+  font-style: normal;
+  font-weight: 400;
+  color: var(--ink-mute);
+}
+
+.map__dir {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.map__cell {
+  display: flex;
+  flex-direction: column;
+  gap: .375rem;
+  padding: 1.125rem 1rem;
+  border-inline-start: 1px solid var(--rule);
+  text-decoration: none;
+  transition: background-color .18s var(--ease);
+}
+
+.map__cell:hover {
+  background: var(--paper-raised);
+}
+
+.map__name {
+  font-size: clamp(1.125rem, 1rem + .5vw, 1.375rem);
+  font-weight: 600;
+  line-height: 1.2;
+  transition: color .18s var(--ease);
+}
+
+.map__cell:hover .map__name {
+  color: var(--ultramarine);
+}
+
+.map__how {
+  font-size: .9375rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+/* Θ is set in the serif: Martian Mono's is too small to read at this size */
+.map__cost {
+  margin-block-start: auto;
+  padding-block-start: .25rem;
+  font-size: .9375rem;
+  color: var(--ink);
+}
+
+/* --------------------------------------------------------------------------
+   4. THE KEY
+   -------------------------------------------------------------------------- */
+.legend-key {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: .875rem 2rem;
+  margin-block-start: 1.25rem;
+  font-size: .9375rem;
+  line-height: 1.35;
+  color: var(--ink-soft);
+}
+
+.legend-key li {
+  display: flex;
+  align-items: center;
+  gap: .875rem;
+}
+
+.kt,
+.kb {
+  flex: none;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+}
+
+.kt {
+  display: grid;
+  place-items: center;
+  border: 2px solid;
+  border-radius: 2px;
+  font-family: var(--mono);
+  font-size: .75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.kt--plain {
+  border-color: var(--tile-rule);
+  background: var(--paper-raised);
+  color: var(--ink);
+}
+
+.kt--hand {
+  border-color: var(--marigold);
+  background: var(--marigold);
+  color: var(--ink);
+}
+
+.kt--wait {
+  border-color: var(--slate);
+  background: var(--slate);
+  color: #F6F5F2;
+}
+
+.kt--done {
+  border-color: var(--jade);
+  background: var(--jade);
+  color: #F3F6F4;
+}
+
+.kt--ring {
+  box-shadow: 0 0 0 2px var(--paper), 0 0 0 4.5px var(--ultramarine);
+}
+
+.kb {
+  border: 2px dashed var(--wish-rule);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--paper-well) 60%, transparent);
+}
+
+.kb--active {
+  border-style: solid;
+  border-color: var(--ink);
+  background: transparent;
+}
+
+.kd {
+  flex: none;
+  inline-size: .5rem;
+  block-size: .5rem;
+  margin-inline: .625rem;
+  border-radius: 1px;
+  background: var(--ultramarine);
+}
+
+/* --------------------------------------------------------------------------
+   5. ALGORITHM SECTIONS & THE SCROLLY LAYOUT
+   Prose on the left scrolls; the stage on the right stays put.
+   -------------------------------------------------------------------------- */
+.algo__lead {
+  max-inline-size: 58ch;
+  margin-block-start: 1.5rem;
+  font-size: clamp(1.0625rem, 1rem + .3vw, 1.1875rem);
+  line-height: 1.55;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+.scrolly {
+  display: grid;
+  grid-template-columns: minmax(15rem, 20rem) minmax(0, 1fr);
+  gap: 0 clamp(2rem, 4vw, 3.5rem);
+  margin-block-start: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.scrolly__steps {
+  grid-column: 1;
+  grid-row: 1;
+  padding-block: 22vh 36vh;
+}
+
+.scrolly__stage {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+  position: sticky;
+  inset-block-start: calc(var(--bar-h) + 1rem);
+  block-size: calc(100vh - var(--bar-h) - 2rem);
+  min-block-size: 26rem;
+  max-block-size: 54rem;
+}
+
+@supports (height: 1svh) {
+  .scrolly__stage {
+    block-size: calc(100svh - var(--bar-h) - 2rem);
+  }
+}
+
+/* Each step's text holds still while its frames play, then moves on. */
+.step__body {
+  position: sticky;
+  inset-block-start: 34vh;
+  padding-block: .125rem 1.5rem;
+  padding-inline-start: 1.125rem;
+  border-inline-start: 2px solid var(--rule);
+  color: var(--ink-mute);
+  transition: color .25s var(--ease), border-color .25s var(--ease);
+}
+
+.step.is-active .step__body {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.step__body p {
+  text-wrap: pretty;
+}
+
+.step__body p+p {
+  margin-block-start: .75rem;
+}
+
+/* --------------------------------------------------------------------------
+   6. THE STAGE
+   -------------------------------------------------------------------------- */
+.stage {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: var(--paper-raised);
+}
+
+.stage__bar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .25rem 1rem;
+  padding: .625rem .875rem;
+  border-block-end: 1px solid var(--rule);
+  font-family: var(--mono);
+  font-size: .6875rem;
+  line-height: 1.5;
+}
+
+.stage__call {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  min-block-size: 3em;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.stage__count {
+  flex: none;
+  color: var(--ink-mute);
+  white-space: nowrap;
+}
+
+.stage__count span {
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.stage__canvas {
+  --cell: 40px;
+  position: relative;
+  flex: 1 1 auto;
+  min-block-size: 0;
+  margin: .5rem .75rem;
+  overflow: hidden;
+}
+
+.stage__code {
+  position: relative;
+  flex: 0 1 auto;
+  max-block-size: 42%;
+  margin: 0;
+  padding-block: .625rem;
+  overflow: auto;
+  background: var(--code-bg);
+  color: var(--code-fg);
+  font-family: var(--mono);
+  font-size: .6875rem;
+  line-height: 1.65;
+  scrollbar-width: thin;
+  scrollbar-color: #45454A transparent;
+}
+
+/* Grid ignores the newlines between line spans */
+.stage__code code {
+  display: grid;
+  min-inline-size: max-content;
+}
+
+.cl {
+  display: block;
+  padding-inline: .75rem 1rem;
+  border-inline-start: 3px solid transparent;
+  white-space: pre;
+  transition: background-color .2s var(--ease), border-color .2s var(--ease), color .2s var(--ease);
+}
+
+.cl.is-on {
+  border-inline-start-color: var(--marigold);
+  background: rgba(255, 255, 255, .09);
+  color: #FFF;
+}
+
+.cl b {
+  font-weight: inherit;
+}
+
+.tk-k {
+  color: #E0A94A;
+}
+
+.tk-f {
+  color: #93A5FF;
+}
+
+.tk-c {
+  color: #B5B3AA;
+}
+
+/* ---- Pieces on the stage ---- */
+.vt,
+.vb,
+.vd,
+.vn {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+}
+
+.vt {
+  --vt-bg: var(--paper);
+  --vt-bd: var(--tile-rule);
+  --vt-fg: var(--ink);
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--vt-bd);
+  border-radius: 2px;
+  background: var(--vt-bg);
+  color: var(--vt-fg);
+  font-family: var(--mono);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  transition:
+    transform .45s var(--ease),
+    width .45s var(--ease),
+    height .45s var(--ease),
+    font-size .45s var(--ease),
+    background-color .25s var(--ease),
+    border-color .25s var(--ease),
+    color .25s var(--ease),
+    box-shadow .2s var(--ease),
+    opacity .3s var(--ease);
+}
+
+.vt--hand {
+  --vt-bg: var(--marigold);
+  --vt-bd: var(--marigold);
+  z-index: 3;
+}
+
+.vt--wait {
+  --vt-bg: var(--slate);
+  --vt-bd: var(--slate);
+  --vt-fg: #F6F5F2;
+}
+
+.vt--done {
+  --vt-bg: var(--jade);
+  --vt-bd: var(--jade);
+  --vt-fg: #F3F6F4;
+}
+
+.vt--dim {
+  opacity: .38;
+}
+
+.vt--hidden {
+  opacity: 0;
+}
+
+.vt.is-ring {
+  z-index: 3;
+  box-shadow: 0 0 0 2px var(--paper-raised), 0 0 0 4.5px var(--ultramarine);
+}
+
+/* A call. Dashed while it's a wish; solid while it runs; jade once it returns. */
+.vb {
+  z-index: 1;
+  border: 2px dashed var(--wish-rule);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--paper-well) 55%, transparent);
+  transition:
+    transform .45s var(--ease),
+    width .45s var(--ease),
+    height .45s var(--ease),
+    border-color .25s var(--ease),
+    background-color .25s var(--ease),
+    opacity .3s var(--ease);
+}
+
+/* Sealed: you're not allowed to look. */
+.vb--sealed {
+  border-color: var(--ink-mute);
+  background: repeating-linear-gradient(135deg, var(--paper-well) 0 6px, #D3CEBB 6px 7.5px);
+}
+
+.vb--wait {
+  background: transparent;
+}
+
+.vb--active {
+  border-style: solid;
+  border-color: var(--ink);
+  background: transparent;
+}
+
+.vb--done {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--jade) 55%, transparent);
+  background: color-mix(in srgb, var(--jade) 6%, transparent);
+}
+
+.vb__label {
+  position: absolute;
+  inset-block-start: calc(100% + .375rem);
+  inset-inline-start: -2px;
+  inline-size: calc(100% + 4px);
+  font-family: var(--mono);
+  font-size: clamp(.5625rem, calc(var(--cell) * .2), .6875rem);
+  line-height: 1.35;
+  color: var(--ink-soft);
+  overflow-wrap: anywhere;
+}
+
+.vd {
+  z-index: 1;
+  border-radius: 1px;
+  background: var(--ultramarine);
+  transition: transform .45s var(--ease), width .45s var(--ease), height .45s var(--ease), opacity .25s var(--ease);
+}
+
+.vd--ghost {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ultramarine) 55%, transparent);
+}
+
+.vn {
+  font-family: var(--mono);
+  font-size: clamp(.5625rem, calc(var(--cell) * .24), .6875rem);
+  line-height: 1;
+  color: var(--ink-mute);
+  white-space: nowrap;
+  transition: transform .45s var(--ease), opacity .3s var(--ease);
+}
+
+.vn--l {
+  translate: 0 -50%;
+}
+
+.vn--r {
+  translate: -100% -50%;
+}
+
+.vn--c {
+  translate: -50% -50%;
+}
+
+.is-entering {
+  opacity: 0 !important;
+  transition: none !important;
+}
+
+.is-leaving {
+  opacity: 0 !important;
+}
+
+.stage__canvas.is-instant * {
+  transition: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   7. WHAT IT COSTS
+   -------------------------------------------------------------------------- */
+.cost-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  margin-block-start: 1.75rem;
+}
+
+.cost-controls__label {
+  margin-inline-end: .5rem;
+  font-size: .9375rem;
+  color: var(--ink-mute);
+}
+
+.cost-controls button {
+  padding: .45rem .8rem;
+  border: 2px solid var(--ink);
+  border-radius: 2px;
+  font-family: var(--mono);
+  font-size: .6875rem;
+  font-weight: 500;
+  transition: background-color .18s var(--ease), color .18s var(--ease);
+}
+
+.cost-controls button:hover {
+  background: var(--paper-well);
+}
+
+.cost-controls button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.fig {
+  margin-block-start: clamp(1.5rem, 3vw, 2.25rem);
+}
+
+.fig__cap {
+  max-inline-size: 64ch;
+  margin-block-start: .875rem;
+  font-size: .9375rem;
+  color: var(--ink-mute);
+  text-wrap: pretty;
+}
+
+/* ---- The shape of the work ---- */
+.shapes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.75rem clamp(1.5rem, 4vw, 3rem);
+  padding: clamp(1rem, 2.5vw, 1.75rem);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: var(--paper-raised);
+}
+
+.shape__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .25rem 1rem;
+  margin-block-end: .75rem;
+  padding-block-end: .5rem;
+  border-block-end: 1px solid var(--rule);
+}
+
+.shape__name {
+  font-size: 1.0625rem;
+  font-weight: 600;
+}
+
+.shape__total {
+  font-family: var(--mono);
+  font-size: .625rem;
+  color: var(--ink-mute);
+}
+
+.shape__svg {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 310px;
+  block-size: auto;
+  overflow: visible;
+}
+
+/* ---- Growth chart ---- */
+.growth__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem 1.5rem;
+  margin-block-end: .75rem;
+  font-size: .9375rem;
+  color: var(--ink-soft);
+}
+
+.growth__legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.growth__key {
+  inline-size: 1.125rem;
+  block-size: 2px;
+  border-radius: 1px;
+}
+
+.growth__plot {
+  position: relative;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: var(--paper-raised);
+}
+
+.growth__svg {
+  display: block;
+  overflow: visible;
+  font-family: var(--mono);
+  font-size: 10px;
+}
+
+.growth__grid line {
+  stroke: #DDD9CC;
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.growth__grid text {
+  fill: var(--ink-mute);
+  font-variant-numeric: tabular-nums;
+}
+
+.growth__grid .growth__axis-label {
+  fill: var(--ink-soft);
+}
+
+.growth__labels text {
+  fill: var(--ink);
+  font-size: 11px;
+}
+
+.growth__leader {
+  fill: none;
+  stroke: var(--ink-mute);
+  stroke-width: 1;
+}
+
+.growth__cross line {
+  stroke: var(--ink-soft);
+  stroke-width: 1;
+}
+
+.growth__tip {
+  position: absolute;
+  z-index: 2;
+  min-inline-size: 11.5rem;
+  padding: .625rem .75rem;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: var(--paper);
+  box-shadow: 0 8px 24px -12px rgba(23, 23, 26, .35);
+  pointer-events: none;
+  font-size: .8125rem;
+}
+
+.growth__tip-head {
+  margin-block-end: .375rem;
+  font-family: var(--mono);
+  font-size: .625rem;
+  color: var(--ink-mute);
+}
+
+.growth__tip-row {
+  display: grid;
+  grid-template-columns: .875rem 3.25rem minmax(0, 1fr);
+  align-items: center;
+  gap: .5rem;
+  color: var(--ink-soft);
+}
+
+.growth__tip-row b {
+  font-family: var(--mono);
+  font-size: .75rem;
+  font-weight: 700;
+  color: var(--ink);
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.growth__tip-key {
+  block-size: 2px;
+  border-radius: 1px;
+}
+
+/* ---- Summary table ---- */
+.table-wrap {
+  margin-block-start: clamp(2rem, 4vw, 2.75rem);
+  overflow-x: auto;
+  border-block-end: 2px solid var(--ink);
+}
+
+.summary {
+  inline-size: 100%;
+  min-inline-size: 50rem;
+  border-collapse: collapse;
+  font-size: .9375rem;
+}
+
+.summary th,
+.summary td {
+  padding: .7rem .75rem;
+  border-block-end: 1px solid var(--rule);
+  text-align: start;
+  vertical-align: baseline;
+  white-space: nowrap;
+}
+
+.summary th:first-child,
+.summary td:first-child {
+  padding-inline-start: 0;
+}
+
+.summary thead th {
+  border-block-end: 2px solid var(--ink);
+  font-size: .875rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.summary tbody tr:last-child>* {
+  border-block-end: 0;
+}
+
+.summary tbody th {
+  font-weight: 600;
+}
+
+.summary tbody th a {
+  text-decoration: none;
+}
+
+.summary tbody th a:hover {
+  color: var(--ultramarine);
+}
+
+.summary td {
+  color: var(--ink-soft);
+}
+
+.summary thead .num {
+  font-family: var(--display);
+  font-size: .875rem;
+}
+
+.summary .num {
+  padding-inline-end: 0;
+  text-align: end;
+  font-family: var(--mono);
+  font-size: .75rem;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   8. CODA
+   -------------------------------------------------------------------------- */
+.tree__svg {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 46rem;
+  block-size: auto;
+  padding: clamp(.75rem, 2vw, 1.5rem);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: var(--paper-raised);
+  font-family: var(--mono);
+}
+
+.tree__edges path {
+  fill: none;
+  stroke: var(--ink-mute);
+  stroke-width: 1.5;
+}
+
+.tree__yn text {
+  font-size: 10px;
+  fill: var(--ink-mute);
+  text-anchor: middle;
+}
+
+.tree__nodes rect {
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+
+.tree__nodes text {
+  font-size: 12px;
+  font-weight: 500;
+  fill: var(--ink);
+  text-anchor: middle;
+}
+
+.tree__leaves rect {
+  fill: var(--jade);
+  rx: 2px;
+}
+
+.tree__leaves text {
+  font-size: 11px;
+  font-weight: 700;
+  fill: #F3F6F4;
+  text-anchor: middle;
+}
+
+/* Bogosort sits in the same dashed well as the front page's locked note */
+.bogo {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1.25rem 2rem;
+  align-items: start;
+  max-inline-size: 48rem;
+  margin-block-start: clamp(2.5rem, 5vw, 3.5rem);
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 2px dashed var(--rule);
+  border-radius: 3px;
+  background: var(--paper-well);
+}
+
+.bogo__intro {
+  grid-column: 1 / -1;
+  color: var(--ink-soft);
+}
+
+.bogo__code {
+  margin: 0;
+  padding: .875rem 1rem;
+  border-radius: 3px;
+  background: var(--code-bg);
+  color: var(--code-fg);
+  font-family: var(--mono);
+  font-size: .6875rem;
+  line-height: 1.7;
+  overflow-x: auto;
+}
+
+.bogo__play {
+  display: grid;
+  gap: .875rem;
+  justify-items: start;
+}
+
+.bogo__row {
+  --tile-size: 2.5rem;
+  display: flex;
+  gap: .375rem;
+}
+
+.bogo__go {
+  padding: .5rem .875rem;
+  border: 2px solid var(--ink);
+  border-radius: 2px;
+  font-family: var(--mono);
+  font-size: .6875rem;
+  font-weight: 500;
+  transition: background-color .18s var(--ease), color .18s var(--ease);
+}
+
+.bogo__go:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.bogo__out {
+  min-block-size: 1.5em;
+  font-size: .9375rem;
+  color: var(--ink-soft);
+}
+
+.viz-back {
+  margin-block-start: 0;
+}
+
+/* --------------------------------------------------------------------------
+   9. NARROW SCREENS — the stage moves to the top, the prose runs beneath it
+   -------------------------------------------------------------------------- */
+@media (max-width: 56rem) {
+  .scrolly {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scrolly__stage {
+    grid-column: 1;
+    grid-row: 1;
+    z-index: 5;
+    inset-block-start: var(--bar-h);
+    block-size: var(--stage-h);
+    min-block-size: 19rem;
+    max-block-size: none;
+    margin-inline: calc(var(--gutter) * -1);
+    border-inline: 0;
+    border-radius: 0;
+  }
+
+  .scrolly__steps {
+    grid-column: 1;
+    grid-row: 2;
+    padding-block: 2rem 30vh;
+  }
+
+  .step__body {
+    position: static;
+    padding-block-end: 2rem;
+    font-size: .9375rem;
+    line-height: 1.55;
+  }
+
+  /* Text that fits under the stage holds still there while its frames play */
+  .step.is-fit .step__body {
+    position: sticky;
+    inset-block-start: var(--stuck-top, 60vh);
+  }
+
+  .stage__bar {
+    padding: .5rem var(--gutter);
+    font-size: .625rem;
+  }
+
+  .stage__canvas {
+    margin: .25rem .5rem;
+  }
+
+  .stage__code {
+    flex: none;
+    max-block-size: calc(2 * 1.7em + 1.25rem);
+    padding-block: .625rem;
+  }
+
+  .cl {
+    padding-inline-start: calc(var(--gutter) - 3px);
+  }
+
+  .map__row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .map__corner {
+    display: none;
+  }
+
+  .map__rowhead {
+    grid-column: 1 / -1;
+    padding-block-end: .25rem;
+  }
+
+  .map__corner+.map__colhead,
+  .map__rowhead+.map__cell {
+    border-inline-start: 0;
+    padding-inline-start: 0;
+  }
+}
+
+@media (max-width: 40rem) {
+  .shapes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bogo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .legend-key {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -1,0 +1,830 @@
+---
+title: Sorting by wishful thinking
+date: 2026-09-19
+description: >-
+  In CS1101S you write a sort by assuming you already have one. Here are four
+  sorts, drawn so you can watch that assumption pay off, and see what each one
+  costs.
+subject: CS1101S
+tags: [Recursion, Sorting, Order of growth]
+styles:
+  - /assets/visualise/visualise.css
+scripts:
+  - /assets/visualise/scrolly.js
+  - /assets/visualise/sorting.js
+---
+
+<!-- ================================================================
+     HERO FIGURE — the whole idea in one row of tiles
+     ================================================================ -->
+<div class="wrap">
+  <figure class="wishbox">
+    <div class="wishbox__row" aria-hidden="true">
+      <span class="tile tile--marigold is-filled">5</span>
+      <span class="wishbox__wish">
+        <span class="tile">2</span>
+        <span class="tile">7</span>
+        <span class="tile">4</span>
+        <span class="tile">1</span>
+        <span class="tile">8</span>
+        <span class="tile">3</span>
+        <span class="tile">6</span>
+        <code class="wishbox__label">insertion_sort(tail(xs))</code>
+      </span>
+    </div>
+    <figcaption class="wishbox__cap">
+      Deal with the first number yourself. For the rest, assume the function you&rsquo;re
+      writing already works. Every sort below runs on these same eight numbers.
+    </figcaption>
+  </figure>
+
+  <noscript>
+    <p class="viz-note">The diagrams on this page are drawn with JavaScript. The text reads
+      fine without it, but you&rsquo;ll miss the point of the page.</p>
+  </noscript>
+</div>
+
+<!-- ================================================================
+     THE RECIPE, AND THE MAP
+     ================================================================ -->
+<section class="section" id="recipe">
+  <div class="wrap">
+
+    <div class="sechead">
+      <h2 class="sechead__title">One recipe</h2>
+      <p class="sechead__note">Split, wish, join.</p>
+    </div>
+
+    <div class="viz-prose">
+      <p>Every sort on this page is built the same way.</p>
+      <ol class="recipe">
+        <li><span><strong>Split</strong> the list into something smaller.</span></li>
+        <li><span><strong>Wish.</strong> Sort the smaller pieces by calling the function you&rsquo;re
+          in the middle of writing, and assume it works.</span></li>
+        <li><span><strong>Join</strong> the sorted pieces into one sorted list.</span></li>
+      </ol>
+      <p>
+        Step two is what CS1101S calls wishful thinking. You don&rsquo;t trace the recursive
+        call. You assume it returns the right answer and ask only what&rsquo;s left for you to
+        do. That&rsquo;s easy to say and hard to believe, because you never get to watch it
+        happen. Here you can: every dashed box on this page is a call you&rsquo;re asked to
+        trust, and if you keep scrolling, it opens.
+      </p>
+    </div>
+
+    <h3 class="viz-h3">Where the work goes</h3>
+    <div class="viz-prose">
+      <p>
+        The four sorts differ in just two choices. Do you split off one element, or cut the
+        list in two? And do the comparisons happen while splitting, on the way down, or while
+        joining, on the way back up?
+      </p>
+    </div>
+
+    <div class="map" role="table" aria-label="The four sorts, by how they split and where they compare">
+      <div class="map__row map__row--head" role="row">
+        <span class="map__corner" role="columnheader"><span class="visually-hidden">Where comparisons happen</span></span>
+        <span class="map__colhead" role="columnheader">
+          <svg class="map__glyph" viewBox="0 0 30 30" aria-hidden="true">
+            <rect x="1" y="1" width="6" height="6" /><rect x="8" y="8" width="6" height="6" />
+            <rect x="15" y="15" width="6" height="6" /><rect x="22" y="22" width="6" height="6" />
+          </svg>
+          Split off one
+        </span>
+        <span class="map__colhead" role="columnheader">
+          <svg class="map__glyph" viewBox="0 0 30 30" aria-hidden="true">
+            <rect x="3" y="1" width="24" height="6" /><rect x="1" y="12" width="12" height="6" />
+            <rect x="17" y="12" width="12" height="6" /><rect x="1" y="23" width="5" height="6" />
+            <rect x="8" y="23" width="5" height="6" /><rect x="17" y="23" width="5" height="6" />
+            <rect x="24" y="23" width="5" height="6" />
+          </svg>
+          Cut in two
+        </span>
+      </div>
+
+      <div class="map__row" role="row">
+        <span class="map__rowhead" role="rowheader">
+          <span class="map__dir" aria-hidden="true">&uarr;</span>
+          <span>Compare on the way back up <em>Easy split, hard join</em></span>
+        </span>
+        <a class="map__cell" role="cell" href="#insertion">
+          <span class="map__name">Insertion sort</span>
+          <span class="map__how">Split with <code>head</code> and <code>tail</code>, join with <code>insert</code>.</span>
+          <span class="map__cost">&Theta;(n&sup2;)</span>
+        </a>
+        <a class="map__cell" role="cell" href="#merge">
+          <span class="map__name">Merge sort</span>
+          <span class="map__how">Split with <code>take</code> and <code>drop</code>, join with <code>merge</code>.</span>
+          <span class="map__cost">&Theta;(n log n)</span>
+        </a>
+      </div>
+
+      <div class="map__row" role="row">
+        <span class="map__rowhead" role="rowheader">
+          <span class="map__dir" aria-hidden="true">&darr;</span>
+          <span>Compare on the way down <em>Hard split, easy join</em></span>
+        </span>
+        <a class="map__cell" role="cell" href="#selection">
+          <span class="map__name">Selection sort</span>
+          <span class="map__how">Split with <code>smallest</code> and <code>remove</code>, join with <code>pair</code>.</span>
+          <span class="map__cost">&Theta;(n&sup2;)</span>
+        </a>
+        <a class="map__cell map__cell--extra" role="cell" href="#quick">
+          <span class="map__name">Quicksort</span>
+          <span class="map__how">Split with <code>filter</code> around a pivot, join with <code>append</code>.</span>
+          <span class="map__cost">&Theta;(n log n), if the pivots are kind</span>
+        </a>
+      </div>
+    </div>
+
+    <h3 class="viz-h3">Reading the diagrams</h3>
+    <ul class="legend-key">
+      <li><span class="kt kt--plain">4</span>Not looked at yet</li>
+      <li><span class="kt kt--hand">4</span>In hand: the element this call is working on</li>
+      <li><span class="kt kt--plain kt--ring">4</span>Being compared</li>
+      <li><span class="kt kt--wait">4</span>Set aside, waiting for a call below to return</li>
+      <li><span class="kt kt--done">4</span>Sorted: part of a list some call returned</li>
+      <li><span class="kb kb--wish"></span>A recursive call you&rsquo;re trusting: a wish</li>
+      <li><span class="kb kb--active"></span>The call that&rsquo;s running now</li>
+      <li><span class="kd"></span>One comparison, logged on the row of the call that made it</li>
+    </ul>
+    <p class="viz-aside">Each row down is one call deeper. Scroll slowly; scroll back up to rewind.</p>
+
+  </div>
+</section>
+
+<!-- ================================================================
+     INSERTION SORT
+     ================================================================ -->
+<section class="section algo" id="insertion" data-scene="insertion">
+  <div class="wrap">
+    <div class="sechead">
+      <h2 class="sechead__title">Insertion sort</h2>
+      <p class="sechead__note">Split off one, compare on the way back up.</p>
+    </div>
+    <p class="algo__lead">
+      The version you&rsquo;ve probably written already: take the head off, sort the tail by
+      wishful thinking, then insert the head where it belongs.
+    </p>
+
+    <div class="scrolly">
+      <div class="scrolly__steps">
+        <div class="step" data-from="i-start">
+          <div class="step__body">
+            <p>Start with one call on the whole list. Insertion sort&rsquo;s split is as cheap as a
+              split gets: <code>head(xs)</code> is 5, and <code>tail(xs)</code> is the other seven.</p>
+          </div>
+        </div>
+        <div class="step" data-from="i-wish" data-to="i-sealed">
+          <div class="step__body">
+            <p>Here is the wish. Hand the tail to <code>insertion_sort</code> and assume it comes
+              back sorted. You don&rsquo;t trace that call, and you don&rsquo;t need to know how it
+              works yet. The box stays shut.</p>
+          </div>
+        </div>
+        <div class="step" data-from="i-trust">
+          <div class="step__body">
+            <p>Say the wish comes true: seven tiles, in order. All that&rsquo;s left for this call
+              is to fit the 5 in.</p>
+          </div>
+        </div>
+        <div class="step" data-from="i-trust" data-to="i-inserted">
+          <div class="step__body">
+            <p><code>insert</code> walks along the sorted list. Each tile smaller than 5 stays in
+              front, <code>pair(head(xs), &hellip;)</code>, and the 5 carries on into the tail.
+              At 6 it stops, because <code>x &lt;= head(xs)</code>, and 5 goes in front of
+              everything left.</p>
+            <p>That&rsquo;s the whole algorithm: one insert, plus trust in a shorter list.</p>
+          </div>
+        </div>
+        <div class="step" data-from="i-open" data-to="i-d3">
+          <div class="step__body">
+            <p>Now open the box. The call you trusted does exactly the same thing to a list one
+              shorter: set the head aside, wish on the tail. Each row down is one call deeper,
+              and each row has its own box.</p>
+          </div>
+        </div>
+        <div class="step" data-from="i-d3" data-to="i-d7">
+          <div class="step__body">
+            <p>Eight calls down, the list runs out and the base case answers straight away:
+              <code>None</code> is already sorted.</p>
+            <p>Look at the grey diagonal. Every call has set a number aside and is waiting to
+              insert it. Nothing is sorted yet; all of the work is still owed.</p>
+          </div>
+        </div>
+        <div class="step" data-from="i-d7">
+          <div class="step__body">
+            <p>That staircase is also the memory bill. The computer has to hold every pending
+              <code>insert</code> at once, one per element: <em>n</em> deferred operations, so
+              &Theta;(n) space.</p>
+          </div>
+        </div>
+        <div class="step" data-from="i-d7" data-to="i-u5">
+          <div class="step__body">
+            <p>Now the wishes come true, from the bottom up. The deepest call inserts 6 into an
+              empty list. The one above inserts 3 into <code>llist(6)</code>, then 8 goes into
+              <code>llist(3, 6)</code>.</p>
+            <p>So this insertion sort builds its answer from the <em>back</em> of the input.</p>
+          </div>
+        </div>
+        <div class="step" data-from="i-u5" data-to="i-u1">
+          <div class="step__body">
+            <p>Each insert walks only as far as it has to. The 1 goes to the front after a single
+              comparison. The 7 has to pass four tiles, and it takes five comparisons to find
+              its spot before 8.</p>
+          </div>
+        </div>
+        <div class="step" data-from="i-u1" data-to="i-u0">
+          <div class="step__body">
+            <p>Back at the top, the first call finally inserts 5 into the sorted seven. It&rsquo;s
+              the same move you trusted at the start, and this time you watched the wish come
+              true.</p>
+          </div>
+        </div>
+        <div class="step" data-from="i-cost">
+          <div class="step__body">
+            <p>Each dot is one comparison. The call at depth <em>k</em> inserts into a list of
+              7&nbsp;&minus;&nbsp;<em>k</em> tiles, so it can make at most that many (the hollow
+              dots).</p>
+            <p>Worst case, a reversed list: 0&nbsp;+&nbsp;1&nbsp;+&nbsp;&#8943;&nbsp;+&nbsp;7&nbsp;=&nbsp;28,
+              a full triangle, &Theta;(n&sup2;). Best case, a list that&rsquo;s already sorted:
+              every insert stops at its first comparison, <em>n</em>&nbsp;&minus;&nbsp;1 in all,
+              &Theta;(n). This list took 19.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="scrolly__stage stage" data-stage>
+        <div class="stage__bar">
+          <p class="stage__call" data-call aria-live="off"></p>
+          <p class="stage__count"><span data-count>0</span> compared</p>
+        </div>
+        <div class="stage__canvas" data-canvas aria-hidden="true"></div>
+        <pre class="stage__code" data-code aria-label="Code"><code><span class="cl" data-k="ins-def">def insert(x, xs):</span>
+<span class="cl" data-k="ins-if">    if is_none(xs):</span>
+<span class="cl" data-k="ins-base">        return llist(x)</span>
+<span class="cl" data-k="ins-cmp">    elif x &lt;= head(xs):</span>
+<span class="cl" data-k="ins-front">        return pair(x, xs)</span>
+<span class="cl" data-k="ins-else0">    else:</span>
+<span class="cl" data-k="ins-else">        return pair(head(xs), insert(x, tail(xs)))</span>
+<span class="cl cl--gap"> </span>
+<span class="cl" data-k="is-def">def insertion_sort(xs):</span>
+<span class="cl" data-k="is-if">    if is_none(xs):</span>
+<span class="cl" data-k="is-base">        return xs</span>
+<span class="cl" data-k="is-else0">    else:</span>
+<span class="cl" data-k="is-rec">        return insert(head(xs), insertion_sort(tail(xs)))</span></code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     SELECTION SORT
+     ================================================================ -->
+<section class="section algo" id="selection" data-scene="selection">
+  <div class="wrap">
+    <div class="sechead">
+      <h2 class="sechead__title">Selection sort</h2>
+      <p class="sechead__note">Split off one, compare on the way down.</p>
+    </div>
+    <p class="algo__lead">
+      Same shape, but the work moves to before the wish: find the smallest, take it out, and
+      sort what&rsquo;s left.
+    </p>
+
+    <div class="scrolly">
+      <div class="scrolly__steps">
+        <div class="step" data-from="s-start" data-to="s-found">
+          <div class="step__body">
+            <p>Selection sort does its thinking first. <code>smallest</code> reduces the list,
+              keeping the smaller of each pair as it goes. It has to look at every tile, because
+              the smallest could be the last one. Seven comparisons to find the 1.</p>
+          </div>
+        </div>
+        <div class="step" data-from="s-found" data-to="s-sealed">
+          <div class="step__body">
+            <p>Take the 1 out with <code>remove</code> and hand the other seven to the wish.
+              The box stays shut.</p>
+          </div>
+        </div>
+        <div class="step" data-from="s-sealed" data-to="s-trust">
+          <div class="step__body">
+            <p>Trust it: the seven come back sorted.</p>
+          </div>
+        </div>
+        <div class="step" data-from="s-trust" data-to="s-paired">
+          <div class="step__body">
+            <p>So the join is a single <code>pair</code>: 1 in front of the rest, with nothing to
+              compare. The hard part happened before the wish.</p>
+          </div>
+        </div>
+        <div class="step" data-from="s-open" data-to="s-d2">
+          <div class="step__body">
+            <p>Open the box and it&rsquo;s the insertion sort staircase again, but mirrored. Each
+              call scans what&rsquo;s left, sets the smallest aside and wishes on the rest. The
+              comparing happens on the way <em>down</em>.</p>
+          </div>
+        </div>
+        <div class="step" data-from="s-d2" data-to="s-bottom">
+          <div class="step__body">
+            <p>Each scan is one shorter than the last: seven comparisons, then six, then five.</p>
+            <p>By the bottom, the grey diagonal already reads 1 to 8. The order is settled, but
+              every call is still waiting on the <code>pair</code> that puts its number in front.
+              Eight pending operations again: &Theta;(n) space.</p>
+          </div>
+        </div>
+        <div class="step" data-from="s-bottom" data-to="s-u0">
+          <div class="step__body">
+            <p>The way back up is quick. Each call pairs its number onto whatever came back from
+              below. No comparisons, one step a row.</p>
+          </div>
+        </div>
+        <div class="step" data-from="s-cost">
+          <div class="step__body">
+            <p>The dots make a perfect triangle: 7&nbsp;+&nbsp;6&nbsp;+&nbsp;&#8943;&nbsp;+&nbsp;1&nbsp;=&nbsp;28.
+              It would be exactly the same for any list of eight, because <code>smallest</code>
+              can&rsquo;t stop early. Selection sort is &Theta;(n&sup2;) in every case.</p>
+            <p>Insertion sort&rsquo;s worst case is selection sort&rsquo;s every case.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="scrolly__stage stage" data-stage>
+        <div class="stage__bar">
+          <p class="stage__call" data-call aria-live="off"></p>
+          <p class="stage__count"><span data-count>0</span> compared</p>
+        </div>
+        <div class="stage__canvas" data-canvas aria-hidden="true"></div>
+        <pre class="stage__code" data-code aria-label="Code"><code><span class="cl" data-k="sm-def">def smallest(xs):</span>
+<span class="cl" data-k="sm-lambda">    return reduce(lambda x, y: (x if x &lt; y else y),</span>
+<span class="cl" data-k="sm-2">                  head(xs),</span>
+<span class="cl" data-k="sm-3">                  tail(xs))</span>
+<span class="cl cl--gap"> </span>
+<span class="cl" data-k="ss-def">def selection_sort(xs):</span>
+<span class="cl" data-k="ss-if">    if is_none(xs):</span>
+<span class="cl" data-k="ss-base">        return xs</span>
+<span class="cl" data-k="ss-else0">    else:</span>
+<span class="cl" data-k="ss-small">        x = smallest(xs)</span>
+<span class="cl" data-k="ss-rec">        return pair(x, selection_sort(remove(x, xs)))</span></code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     MERGE SORT
+     ================================================================ -->
+<section class="section algo" id="merge" data-scene="merge">
+  <div class="wrap">
+    <div class="sechead">
+      <h2 class="sechead__title">Merge sort</h2>
+      <p class="sechead__note">Cut in two, compare on the way back up.</p>
+    </div>
+    <p class="algo__lead">
+      Cut the list in half instead of peeling off one element. That means two wishes, and a
+      join that does real work.
+    </p>
+
+    <div class="scrolly">
+      <div class="scrolly__steps">
+        <div class="step" data-from="m-start">
+          <div class="step__body">
+            <p>Merge sort splits the list down the middle: <code>take</code> the first
+              <code>middle(length(xs))</code> tiles, and <code>drop</code> them to get the rest.</p>
+          </div>
+        </div>
+        <div class="step" data-from="m-split" data-to="m-sealed">
+          <div class="step__body">
+            <p>Two wishes this time. Assume <code>merge_sort</code> sorts each half, and
+              don&rsquo;t look inside.</p>
+          </div>
+        </div>
+        <div class="step" data-from="m-trust">
+          <div class="step__body">
+            <p>Both halves come back sorted. Now, how do you turn two sorted lists into one?</p>
+          </div>
+        </div>
+        <div class="step" data-from="m-trust" data-to="m-merged">
+          <div class="step__body">
+            <p>Zip them. The smallest tile overall must be at the front of one half or the
+              other, so compare the two fronts and take the smaller. Repeat. When one side runs
+              out, the rest of the other goes on as it is.</p>
+            <p>Seven comparisons for eight tiles.</p>
+          </div>
+        </div>
+        <div class="step" data-from="m-open" data-to="m-go-3-0">
+          <div class="step__body">
+            <p>Now open the boxes, and see what most merge sort diagrams get wrong. The two
+              halves are <em>not</em> sorted side by side. Python evaluates the first argument to
+              <code>merge</code> completely before it starts on the second, so the left half goes
+              all the way down first.</p>
+            <p>The right half waits in the top row, faded. It hasn&rsquo;t even been cut off
+              yet.</p>
+          </div>
+        </div>
+        <div class="step" data-from="m-go-3-0" data-to="m-ret-2-0">
+          <div class="step__body">
+            <p>At the bottom, a single tile is already sorted, so the base case hands it straight
+              back. The first merge anywhere is 5 and 2 becoming <code>llist(2, 5)</code>.</p>
+          </div>
+        </div>
+        <div class="step" data-from="m-ret-2-0" data-to="m-ret-1-0">
+          <div class="step__body">
+            <p>One level up, the other quarter goes down, comes back as <code>llist(4, 7)</code>,
+              and the two merge. The left half of the whole list is done: 2&nbsp;4&nbsp;5&nbsp;7.</p>
+          </div>
+        </div>
+        <div class="step" data-from="m-ret-1-0" data-to="m-ret-1-4">
+          <div class="step__body">
+            <p>Only now does the right half start, and it repeats the pattern exactly.</p>
+          </div>
+        </div>
+        <div class="step" data-from="m-ret-1-4" data-to="m-ret-0-0">
+          <div class="step__body">
+            <p>Last comes the merge you trusted at the very beginning.</p>
+          </div>
+        </div>
+        <div class="step" data-from="m-cost">
+          <div class="step__body">
+            <p>Read the ledger by row. Each level merges all eight tiles between its calls, and
+              every comparison places one tile, so a level costs fewer than <em>n</em>
+              comparisons. Halving 8 reaches 1 after log<sub>2</sub>&nbsp;8&nbsp;=&nbsp;3 levels.</p>
+            <p><em>n</em> per level times log&nbsp;<em>n</em> levels: &Theta;(n log n). The work is a
+              short, wide rectangle instead of a triangle, whatever order the input came in.</p>
+          </div>
+        </div>
+        <div class="step" data-from="m-cost">
+          <div class="step__body">
+            <p>Space is subtler. The dashed boxes are the calls waiting at any moment, and there
+              are never more than log&nbsp;<em>n</em> of them. But <code>merge</code> is a
+              recursive process too: the final merge leaves up to <em>n</em> <code>pair</code>s
+              pending. Written this way, merge sort still needs &Theta;(n) space.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="scrolly__stage stage" data-stage>
+        <div class="stage__bar">
+          <p class="stage__call" data-call aria-live="off"></p>
+          <p class="stage__count"><span data-count>0</span> compared</p>
+        </div>
+        <div class="stage__canvas" data-canvas aria-hidden="true"></div>
+        <pre class="stage__code" data-code aria-label="Code"><code><span class="cl" data-k="ms-def">def merge_sort(xs):</span>
+<span class="cl" data-k="ms-if">    if is_none(xs) or is_none(tail(xs)):</span>
+<span class="cl" data-k="ms-base">        return xs</span>
+<span class="cl" data-k="ms-else0">    else:</span>
+<span class="cl" data-k="ms-mid">        mid = middle(length(xs))</span>
+<span class="cl" data-k="ms-rec">        return merge(merge_sort(take(xs, mid)),</span>
+<span class="cl" data-k="ms-rec2">                     merge_sort(drop(xs, mid)))</span>
+<span class="cl cl--gap"> </span>
+<span class="cl" data-k="mg-def">def merge(xs, ys):</span>
+<span class="cl" data-k="mg-if1">    if is_none(xs):</span>
+<span class="cl" data-k="mg-ys">        return ys</span>
+<span class="cl" data-k="mg-if2">    elif is_none(ys):</span>
+<span class="cl" data-k="mg-xs">        return xs</span>
+<span class="cl" data-k="mg-else0">    else:</span>
+<span class="cl" data-k="mg-x">        x = head(xs)</span>
+<span class="cl" data-k="mg-y">        y = head(ys)</span>
+<span class="cl" data-k="mg-cmp">        if x &lt; y:</span>
+<span class="cl" data-k="mg-left">            return pair(x, merge(tail(xs), ys))</span>
+<span class="cl" data-k="mg-else1">        else:</span>
+<span class="cl" data-k="mg-right">            return pair(y, merge(xs, tail(ys)))</span></code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     QUICKSORT
+     ================================================================ -->
+<section class="section algo" id="quick" data-scene="quick">
+  <div class="wrap">
+    <div class="sechead">
+      <h2 class="sechead__title">Quicksort</h2>
+      <p class="sechead__note">Cut in two, compare on the way down.</p>
+    </div>
+    <p class="algo__lead">
+      This one isn&rsquo;t among the three from the course, but it fills the last square of the
+      map. It&rsquo;s merge sort turned inside out: the split does all the comparing, and the
+      join does none.
+    </p>
+
+    <div class="scrolly">
+      <div class="scrolly__steps">
+        <div class="step" data-from="q-start" data-to="q-pivot">
+          <div class="step__body">
+            <p>Pick a pivot. The simplest choice is the head: 5.</p>
+          </div>
+        </div>
+        <div class="step" data-from="q-pivot" data-to="q-pass1">
+          <div class="step__body">
+            <p>The first <code>filter</code> walks the tail and sends everything smaller than 5
+              down to the left.</p>
+          </div>
+        </div>
+        <div class="step" data-from="q-pass1" data-to="q-split">
+          <div class="step__body">
+            <p>The second <code>filter</code> walks the whole tail <em>again</em> to collect
+              everything else. That&rsquo;s two passes where one would do, but the order of
+              growth won&rsquo;t notice.</p>
+            <p>Now look where the 5 lands. Everything to its left is smaller and everything to its
+              right is larger, so it&rsquo;s already in its final place.</p>
+          </div>
+        </div>
+        <div class="step" data-from="q-sealed" data-to="q-trust">
+          <div class="step__body">
+            <p>Wish both sides sorted.</p>
+          </div>
+        </div>
+        <div class="step" data-from="q-trust" data-to="q-joined">
+          <div class="step__body">
+            <p>The join is <code>append</code>, and it compares nothing. The split already put
+              every tile on the right side of the pivot, so the pieces just stack back
+              together.</p>
+          </div>
+        </div>
+        <div class="step" data-from="q-open" data-to="q-ret-1-0">
+          <div class="step__body">
+            <p>Open the boxes. Each side picks its own pivot and splits again. The pieces
+              aren&rsquo;t halves; they&rsquo;re whatever size the pivot makes them: 4 and 3 here,
+              then 1 and 2.</p>
+            <p>Once a pivot turns green, it never moves again.</p>
+          </div>
+        </div>
+        <div class="step" data-from="q-ret-1-0" data-to="q-done">
+          <div class="step__body">
+            <p>On this list the splits come out fairly even, the deepest call is only three
+              levels down, and the whole sort costs 26 comparisons: two for each tile at each
+              level it passes through.</p>
+          </div>
+        </div>
+        <div class="step" data-from="w-start" data-to="w-go-7-7">
+          <div class="step__body">
+            <p>Now give it a list that&rsquo;s already sorted. The pivot is always the smallest
+              thing left, so every other tile goes right and the left side is always empty.</p>
+            <p>The tree turns into a staircase eight calls deep. It&rsquo;s selection sort in
+              disguise, comparing twice as often.</p>
+          </div>
+        </div>
+        <div class="step" data-from="w-go-7-7" data-to="w-ret-0-0">
+          <div class="step__body">
+            <p>On the way back up, each <code>append</code> just stacks the pieces.</p>
+          </div>
+        </div>
+        <div class="step" data-from="w-cost">
+          <div class="step__body">
+            <p>Even splits give about log&nbsp;<em>n</em> levels of <em>n</em> work each:
+              &Theta;(n log n). A pivot that always lands at one end gives <em>n</em> levels:
+              &Theta;(n&sup2;), here 56 comparisons against 26.</p>
+            <p>With the head as pivot, the input you&rsquo;d expect to be easiest is the worst
+              possible one. That&rsquo;s why real quicksorts pick their pivot at random.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="scrolly__stage stage" data-stage>
+        <div class="stage__bar">
+          <p class="stage__call" data-call aria-live="off"></p>
+          <p class="stage__count"><span data-count>0</span> compared</p>
+        </div>
+        <div class="stage__canvas" data-canvas aria-hidden="true"></div>
+        <pre class="stage__code" data-code aria-label="Code"><code><span class="cl" data-k="qs-def">def quicksort(xs):</span>
+<span class="cl" data-k="qs-if">    if is_none(xs):</span>
+<span class="cl" data-k="qs-base">        return xs</span>
+<span class="cl" data-k="qs-else0">    else:</span>
+<span class="cl" data-k="qs-p">        p = head(xs)</span>
+<span class="cl" data-k="qs-small">        smaller = filter(lambda x: x &lt; p, tail(xs))</span>
+<span class="cl" data-k="qs-large">        larger = filter(lambda x: x &gt;= p, tail(xs))</span>
+<span class="cl" data-k="qs-app">        return append(quicksort(smaller),</span>
+<span class="cl" data-k="qs-app2">                      pair(p, quicksort(larger)))</span></code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     WHAT IT COSTS
+     ================================================================ -->
+<section class="section" id="cost" data-cost>
+  <div class="wrap">
+    <div class="sechead">
+      <h2 class="sechead__title">What it costs</h2>
+      <p class="sechead__note">Counted in comparisons, the one step every sort here shares.</p>
+    </div>
+
+    <div class="viz-prose">
+      <p>
+        Time first. The figures below run all four sorts on a list of 32 and draw the work the
+        way the ledgers above did: one row per level of recursion, one square per comparison.
+        The area is the time. Change the order of the input and watch the shapes.
+      </p>
+    </div>
+
+    <div class="cost-controls" role="group" aria-label="Order of the input list">
+      <span class="cost-controls__label">Input</span>
+      <button type="button" data-order="random" aria-pressed="true">Shuffled</button>
+      <button type="button" data-order="sorted" aria-pressed="false">Already sorted</button>
+      <button type="button" data-order="reversed" aria-pressed="false">Reversed</button>
+    </div>
+
+    <figure class="fig">
+      <div class="shapes" data-shapes></div>
+      <figcaption class="fig__cap">
+        Sorting 32 numbers. Triangles are &Theta;(n&sup2;); short, wide rectangles are
+        &Theta;(n log n). On an already-sorted list, insertion sort&rsquo;s triangle collapses
+        to a line and quicksort&rsquo;s doubles. Selection sort doesn&rsquo;t change at all.
+      </figcaption>
+    </figure>
+
+    <figure class="fig">
+      <ul class="growth__legend" data-legend aria-hidden="true"></ul>
+      <div class="growth__plot" data-growth tabindex="0"
+        aria-label="Line chart of comparisons against list length for each sort. Use the left and right arrow keys to read exact values.">
+        <div class="growth__tip" data-tip hidden></div>
+      </div>
+      <figcaption class="fig__cap">
+        Total comparisons as the list grows from 2 to 100 (shuffled lists average 16 shuffles).
+        Two curves bend upward and two stay nearly straight. Hover, or focus the chart and use
+        the arrow keys, for exact counts.
+      </figcaption>
+    </figure>
+
+    <h3 class="viz-h3">Space</h3>
+    <div class="viz-prose">
+      <p>
+        Space in the CS1101S sense means how many deferred operations the computer has to hold
+        at the deepest point. Written this way, all four sorts need &Theta;(n), for different
+        reasons.
+      </p>
+      <ul class="viz-list">
+        <li>Insertion sort holds one pending <code>insert</code> per element: the grey diagonal.</li>
+        <li>Selection sort holds one pending <code>pair</code> per element: the same diagonal,
+          already in order.</li>
+        <li>Merge sort&rsquo;s own calls are only log&nbsp;<em>n</em> deep, but <code>merge</code>
+          is a recursive process, and the last merge leaves up to <em>n</em> <code>pair</code>s
+          waiting.</li>
+        <li>Quicksort holds the pending <code>append</code>s along one path of calls. On an
+          already-sorted list that path is <em>n</em> long.</li>
+      </ul>
+    </div>
+
+    <div class="table-wrap">
+      <table class="summary">
+        <caption class="visually-hidden">The four sorts compared</caption>
+        <thead>
+          <tr>
+            <th scope="col">Sort</th>
+            <th scope="col">Split</th>
+            <th scope="col">Join</th>
+            <th scope="col">Recurrence, worst case</th>
+            <th scope="col">Best</th>
+            <th scope="col">Worst</th>
+            <th scope="col">Space</th>
+            <th scope="col" class="num">At n = 100</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><a href="#insertion">Insertion</a></th>
+            <td><code>head</code>, <code>tail</code></td>
+            <td><code>insert</code></td>
+            <td>T(n) = T(n&minus;1) + n</td>
+            <td>&Theta;(n), sorted</td>
+            <td>&Theta;(n&sup2;), reversed</td>
+            <td>&Theta;(n)</td>
+            <td class="num" data-at100="insertion"></td>
+          </tr>
+          <tr>
+            <th scope="row"><a href="#selection">Selection</a></th>
+            <td><code>smallest</code>, <code>remove</code></td>
+            <td><code>pair</code></td>
+            <td>T(n) = T(n&minus;1) + n</td>
+            <td>&Theta;(n&sup2;)</td>
+            <td>&Theta;(n&sup2;)</td>
+            <td>&Theta;(n)</td>
+            <td class="num" data-at100="selection"></td>
+          </tr>
+          <tr>
+            <th scope="row"><a href="#merge">Merge</a></th>
+            <td><code>take</code>, <code>drop</code></td>
+            <td><code>merge</code></td>
+            <td>T(n) = 2T(n/2) + n</td>
+            <td>&Theta;(n log n)</td>
+            <td>&Theta;(n log n)</td>
+            <td>&Theta;(n)</td>
+            <td class="num" data-at100="merge"></td>
+          </tr>
+          <tr>
+            <th scope="row"><a href="#quick">Quick</a></th>
+            <td><code>filter</code> &times; 2</td>
+            <td><code>append</code></td>
+            <td>T(n) = T(n&minus;1) + n</td>
+            <td>&Theta;(n log n)</td>
+            <td>&Theta;(n&sup2;), sorted</td>
+            <td>&Theta;(n)</td>
+            <td class="num" data-at100="quick"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="viz-aside">The last column follows the input chosen above.</p>
+
+  </div>
+</section>
+
+<!-- ================================================================
+     CODA
+     ================================================================ -->
+<section class="section" id="floor">
+  <div class="wrap">
+    <div class="sechead">
+      <h2 class="sechead__title">Can anything beat n log n?</h2>
+      <p class="sechead__note">Not by comparing.</p>
+    </div>
+
+    <div class="viz-prose">
+      <p>
+        Three numbers can arrive in 3! = 6 different orders, and a sort has to tell all six
+        apart. Each comparison has two outcomes, so <em>k</em> comparisons can tell apart at
+        most 2<sup><em>k</em></sup> orders. Six orders need at least three comparisons, and here
+        they are:
+      </p>
+    </div>
+
+    <figure class="fig tree">
+      <svg class="tree__svg" viewBox="0 0 680 290" role="img"
+        aria-labelledby="tree-title">
+        <title id="tree-title">A decision tree for sorting three items a, b and c. Each
+          comparison splits the possibilities in two; six orders need three levels.</title>
+        <g class="tree__edges">
+          <path d="M340 38 L170 88" /><path d="M340 38 L510 88" />
+          <path d="M170 114 L85 164" /><path d="M170 114 L255 164" />
+          <path d="M510 114 L425 164" /><path d="M510 114 L595 164" />
+          <path d="M255 190 L210 240" /><path d="M255 190 L300 240" />
+          <path d="M595 190 L550 240" /><path d="M595 190 L640 240" />
+        </g>
+        <g class="tree__yn">
+          <text x="244" y="56">yes</text><text x="424" y="56">no</text>
+          <text x="112" y="136">yes</text><text x="222" y="136">no</text>
+          <text x="452" y="136">yes</text><text x="562" y="136">no</text>
+          <text x="214" y="216">yes</text><text x="286" y="216">no</text>
+          <text x="554" y="216">yes</text><text x="626" y="216">no</text>
+        </g>
+        <g class="tree__nodes">
+          <rect x="302" y="12" width="76" height="26" rx="3" /><text x="340" y="29">a &lt; b</text>
+          <rect x="132" y="88" width="76" height="26" rx="3" /><text x="170" y="105">b &lt; c</text>
+          <rect x="472" y="88" width="76" height="26" rx="3" /><text x="510" y="105">a &lt; c</text>
+          <rect x="217" y="164" width="76" height="26" rx="3" /><text x="255" y="181">a &lt; c</text>
+          <rect x="557" y="164" width="76" height="26" rx="3" /><text x="595" y="181">b &lt; c</text>
+        </g>
+        <g class="tree__leaves">
+          <g transform="translate(56 164)"><rect x="0" width="18" height="18" /><rect x="20" width="18" height="18" /><rect x="40" width="18" height="18" /><text x="9" y="13">a</text><text x="29" y="13">b</text><text x="49" y="13">c</text></g>
+          <g transform="translate(396 164)"><rect x="0" width="18" height="18" /><rect x="20" width="18" height="18" /><rect x="40" width="18" height="18" /><text x="9" y="13">b</text><text x="29" y="13">a</text><text x="49" y="13">c</text></g>
+          <g transform="translate(181 240)"><rect x="0" width="18" height="18" /><rect x="20" width="18" height="18" /><rect x="40" width="18" height="18" /><text x="9" y="13">a</text><text x="29" y="13">c</text><text x="49" y="13">b</text></g>
+          <g transform="translate(271 240)"><rect x="0" width="18" height="18" /><rect x="20" width="18" height="18" /><rect x="40" width="18" height="18" /><text x="9" y="13">c</text><text x="29" y="13">a</text><text x="49" y="13">b</text></g>
+          <g transform="translate(521 240)"><rect x="0" width="18" height="18" /><rect x="20" width="18" height="18" /><rect x="40" width="18" height="18" /><text x="9" y="13">b</text><text x="29" y="13">c</text><text x="49" y="13">a</text></g>
+          <g transform="translate(611 240)"><rect x="0" width="18" height="18" /><rect x="20" width="18" height="18" /><rect x="40" width="18" height="18" /><text x="9" y="13">c</text><text x="29" y="13">b</text><text x="49" y="13">a</text></g>
+        </g>
+      </svg>
+      <figcaption class="fig__cap">
+        Every way of sorting three things by comparing is a tree like this one. Six leaves need
+        a tree at least &lceil;log<sub>2</sub>&nbsp;6&rceil;&nbsp;=&nbsp;3 levels deep.
+      </figcaption>
+    </figure>
+
+    <div class="viz-prose">
+      <p>
+        For <em>n</em> numbers you need 2<sup><em>k</em></sup> &ge; <em>n</em>!, so
+        <em>k</em> &ge; log<sub>2</sub>(<em>n</em>!), and log<sub>2</sub>(<em>n</em>!) grows like
+        <em>n</em>&nbsp;log<sub>2</sub>&nbsp;<em>n</em>. No sort that works by comparing can do
+        better in the worst case. Merge sort is already there.
+      </p>
+      <p>
+        Faster sorts get there by not comparing at all. If you know your numbers are small
+        whole numbers below <em>k</em>, you can count how many of each there are and write them
+        back out in order. That&rsquo;s counting sort, &Theta;(n + k), and it only works because
+        it knows something about the numbers.
+      </p>
+    </div>
+
+    <aside class="bogo" data-bogo>
+      <p class="bogo__intro">And for completeness, the other end of the scale.</p>
+      <pre class="bogo__code"><code>def bogosort(xs):
+    while not is_sorted(xs):
+        xs = shuffle(xs)
+    return xs</code></pre>
+      <div class="bogo__play">
+        <div class="bogo__row" aria-hidden="true">
+          <span class="tile tile--jade" data-bogo-tile>3</span>
+          <span class="tile tile--jade" data-bogo-tile>5</span>
+          <span class="tile tile--jade" data-bogo-tile>1</span>
+          <span class="tile tile--jade" data-bogo-tile>4</span>
+          <span class="tile tile--jade" data-bogo-tile>2</span>
+        </div>
+        <button type="button" class="bogo__go" data-bogo-go>Shuffle until sorted</button>
+        <p class="bogo__out" data-bogo-out role="status" aria-live="polite">Expected time: &Theta;(n &middot; n!). Worst case: never.</p>
+      </div>
+    </aside>
+
+  </div>
+</section>

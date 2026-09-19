@@ -1,0 +1,58 @@
+---
+layout: base
+title: Visualise
+permalink: /visualise/
+description: >-
+  Scroll-driven explainers for ideas that are easier to watch than to read.
+  Each one is a single page; scroll down to play it, scroll up to rewind.
+---
+
+<section class="section">
+  <div class="wrap">
+
+    <div class="sechead">
+      <h1 class="sechead__title">Visualise</h1>
+      <p class="sechead__note">Ideas that are easier to watch than to read. Scroll to play, scroll back to rewind.</p>
+    </div>
+
+    {%- assign pieces = site.visualise | sort: 'date' | reverse %}
+
+    {%- if pieces.size > 0 %}
+    <ol class="index">
+      {%- for piece in pieces %}
+      <li class="entry entry--{{ piece.accent | default: 'marigold' }}">
+        <div class="entry__gutter" aria-hidden="true"></div>
+        <div class="entry__body">
+          <h2 class="entry__title">
+            <a class="entry__link" href="{{ piece.url | relative_url }}">{{ piece.title }}</a>
+          </h2>
+          {%- if piece.description %}
+          <p class="entry__desc">{{ piece.description | strip_html | strip_newlines | truncate: 240 }}</p>
+          {%- endif %}
+          {%- if piece.tags and piece.tags.size > 0 %}
+          <ul class="tags">
+            {%- for tag in piece.tags %}
+            <li>{{ tag }}</li>
+            {%- endfor %}
+          </ul>
+          {%- endif %}
+          <p class="entry__links">
+            <a href="{{ piece.url | relative_url }}">Open</a>
+          </p>
+        </div>
+        <p class="entry__meta">
+          <span class="entry__year">{{ piece.date | date: "%Y" }}</span>
+          <span class="entry__status">{{ piece.date | date: "%-d %b" }}</span>
+          {%- if piece.subject %}
+          <span class="entry__role">{{ piece.subject }}</span>
+          {%- endif %}
+        </p>
+      </li>
+      {%- endfor %}
+    </ol>
+    {%- else %}
+    <p class="prose">Nothing here yet.</p>
+    {%- endif %}
+
+  </div>
+</section>
