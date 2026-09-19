@@ -978,6 +978,33 @@ button {
     display: none;
   }
 
+  /* Six links: tighten, and let the row scroll rather than clip on the narrowest phones */
+  .topbar__inner {
+    gap: .75rem;
+  }
+
+  .topbar__nav {
+    gap: .625rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .topbar__nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .topbar__nav a {
+    flex: none;
+    font-size: .625rem;
+    letter-spacing: 0;
+  }
+}
+
+@media (max-width: 24rem) {
+  .topbar__nav {
+    gap: .5rem;
+  }
+
   .lede {
     max-inline-size: none;
   }

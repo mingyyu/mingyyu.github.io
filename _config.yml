@@ -16,10 +16,14 @@ url: https://mingyyu.github.io
 baseurl: ""
 
 # Drop a .md file in _blog/ and it becomes a page at /blog/<filename>/
+# Drop an .html file in _visualise/ and it becomes a page at /visualise/<filename>/
 collections:
   blog:
     output: true
     permalink: /blog/:name/
+  visualise:
+    output: true
+    permalink: /visualise/:name/
 
 # Defaults, so a new post only needs a title and a date.
 defaults:
@@ -29,6 +33,12 @@ defaults:
     values:
       layout: post
       accent: jade
+  - scope:
+      path: ""
+      type: visualise
+    values:
+      layout: visual
+      accent: marigold
 
 markdown: kramdown
 kramdown:

@@ -1,0 +1,40 @@
+---
+layout: base
+og_type: article
+---
+
+{%- comment -%}
+  A visualise post is hand-built HTML, not markdown: the page supplies its
+  own sections after the header. Page-specific CSS and JS come in through
+  the `styles` and `scripts` lists in front matter (see base.html).
+{%- endcomment -%}
+
+<article class="viz">
+
+  <header class="section viz-head">
+    <div class="wrap">
+      <p class="eyebrow post__eyebrow">
+        <a href="{{ '/visualise/' | relative_url }}">Visualise</a>
+        <span aria-hidden="true">&nbsp;/&nbsp;</span>
+        <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%-d %B %Y" }}</time>
+      </p>
+
+      <h1 class="post__title viz-head__title">{{ page.title }}</h1>
+
+      {%- if page.description %}
+      <p class="lede post__lede viz-head__lede">{{ page.description }}</p>
+      {%- endif %}
+    </div>
+  </header>
+
+  {{ content }}
+
+  <div class="section">
+    <div class="wrap">
+      <p class="post__back viz-back">
+        <a href="{{ '/visualise/' | relative_url }}">All visualisations</a>
+      </p>
+    </div>
+  </div>
+
+</article>
