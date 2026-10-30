@@ -3,8 +3,9 @@ layout: base
 title: Visualise
 permalink: /visualise/
 description: >-
-  Scroll-driven explainers for ideas that are easier to watch than to read.
-  Each one is a single page; scroll down to play it, scroll up to rewind.
+  Scroll-driven visual explainers for algorithms and ideas that are clearer in
+  motion than in static text. Scroll down to advance each step, or scroll up
+  to rewind.
 ---
 
 <section class="section">
@@ -12,7 +13,8 @@ description: >-
 
     <div class="sechead">
       <h1 class="sechead__title">Visualise</h1>
-      <p class="sechead__note">Ideas that are easier to watch than to read. Scroll to play, scroll back to rewind.</p>
+      <p class="sechead__note">Interactive explainers for concepts that make more sense in motion than on a static page.
+  Scroll down to step forward; scroll up to rewind.</p>
     </div>
 
     {%- assign pieces = site.visualise | sort: 'date' | reverse %}
@@ -51,7 +53,7 @@ description: >-
       {%- endfor %}
     </ol>
     {%- else %}
-    <p class="prose">Nothing here yet.</p>
+    <p class="prose">No explainers here yet.</p>
     {%- endif %}
 
   </div>

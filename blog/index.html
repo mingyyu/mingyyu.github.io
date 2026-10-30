@@ -3,8 +3,8 @@ layout: base
 title: Blog
 permalink: /blog/
 description: >-
-  Notes on building things — schema design, getting state right, and whatever
-  else is currently occupying the unglamorous half of the work.
+  Notes on software engineering: schema design, keeping state consistent, and
+  whatever else is currently occupying the unglamorous half of the work.
 ---
 
 <section class="section">
@@ -12,7 +12,7 @@ description: >-
 
     <div class="sechead">
       <h1 class="sechead__title">Blog</h1>
-      <p class="sechead__note">Notes on what I&rsquo;m building, and what broke on the way.</p>
+      <p class="sechead__note">Write-ups on projects, bugs, and how things work under the hood.</p>
     </div>
 
     {%- assign posts = site.blog | sort: 'date' | reverse %}
@@ -51,7 +51,7 @@ description: >-
       {%- endfor %}
     </ol>
     {%- else %}
-    <p class="prose">Nothing published yet.</p>
+    <p class="prose">No posts yet.</p>
     {%- endif %}
 
   </div>

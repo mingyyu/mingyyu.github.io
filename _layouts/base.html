@@ -4,19 +4,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{{ page.title }} &mdash; Ming Yu</title>
+  <title>{{ page.title }} &middot; Ming Yu</title>
   <meta name="description" content="{{ page.description | default: site.description | strip_newlines | strip }}" />
   <meta name="theme-color" content="#EDEBE3" />
 
   <meta property="og:type" content="{{ page.og_type | default: 'website' }}" />
-  <meta property="og:title" content="{{ page.title }} — Ming Yu" />
+  <meta property="og:title" content="{{ page.title }} · Ming Yu" />
   <meta property="og:url" content="{{ page.url | absolute_url }}" />
   <meta property="og:description"
     content="{{ page.description | default: site.description | strip_newlines | strip }}" />
 
   <link rel="canonical" href="{{ page.url | absolute_url }}" />
   <link rel="icon" href="{{ '/favicon.svg' | relative_url }}" type="image/svg+xml" />
-  <link rel="alternate" type="application/atom+xml" title="Ming Yu — Blog" href="{{ '/blog/feed.xml' | relative_url }}" />
+  <link rel="alternate" type="application/atom+xml" title="Ming Yu · Blog" href="{{ '/blog/feed.xml' | relative_url }}" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -39,7 +39,7 @@
         <span class="topbar__mark-name">Ming&nbsp;Yu</span>
       </a>
       <nav class="topbar__nav" aria-label="Sections">
-        <a href="{{ '/#work' | relative_url }}">Work</a>
+        <a href="{{ '/#projects' | relative_url }}">Projects</a>
         <a href="{{ '/#games' | relative_url }}">Games</a>
         <a href="{{ '/#about' | relative_url }}">About</a>
         <a href="{{ '/blog/' | relative_url }}">Blog</a>
@@ -55,7 +55,7 @@
 
   <footer class="foot">
     <div class="wrap foot__inner">
-      <p>&copy; 2025 Ming Yu</p>
+      <p>&copy; 2026 Ming Yu</p>
       <p>Set in Zilla Slab &amp; Martian Mono</p>
     </div>
   </footer>

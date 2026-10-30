@@ -1,10 +1,12 @@
 /**
  * Ming Yu — Index
  *
- * Two things happen on this page:
+ * Four things happen on this page:
  *   1. The name flips into place once, on load.
  *   2. The six empty tiles under it are a real guessing game. Solving it
  *      unlocks the notes section further down.
+ *   3. Each project row flips its status square in as it scrolls into view.
+ *   4. A marker in the top bar slides to the section you're reading.
  *
  * That's the whole script. Everything else is CSS.
  */
@@ -14,8 +16,13 @@ const LEN = ANSWER.length;
 const STORE_KEY = 'mingyu.notes.unlocked';
 const FLIP_MS = 500;
 const STAGGER_MS = 90;
+const ROW_STAGGER_MS = 80;
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Set before first paint so rows that will animate never flash in fully drawn.
+const canReveal = !reducedMotion && 'IntersectionObserver' in window;
+if (canReveal) document.documentElement.classList.add('has-reveal');
 
 /* -------------------------------------------------------------------------
    Storage — never let a locked-down browser break the page
@@ -182,7 +189,7 @@ class Puzzle {
     if (this.busy || this.solved) return;
 
     if (this.value.length < LEN) {
-      this.say(`${LEN} letters. You have ${this.value.length}.`);
+      this.say(`Need ${LEN} letters (${this.value.length} so far).`);
       this.nudge();
       return;
     }
@@ -217,7 +224,7 @@ class Puzzle {
       this.win();
     } else {
       this.showingFeedback = true;
-      this.say('Not it. Green is right and in place, amber is right but misplaced.');
+      this.say('Not quite. Green means right spot; amber means right letter, wrong spot.');
       this.nudge();
     }
   }
@@ -229,10 +236,10 @@ class Puzzle {
     this.tiles.forEach(t => t.classList.remove('tile--active'));
 
     this.status.classList.add('is-win');
-    this.status.textContent = 'Correct. ';
+    this.status.textContent = 'Got it. ';
     const link = document.createElement('a');
     link.href = '#about';
-    link.textContent = 'The notes are unlocked ↓';
+    link.textContent = 'Read the unlocked notes ↓';
     this.status.appendChild(link);
 
     writeUnlocked();
@@ -249,7 +256,7 @@ class Puzzle {
       tile.classList.add(FILLS.jade, 'is-filled');
     });
     this.status.classList.add('is-win');
-    this.status.textContent = 'Solved. The notes below are open.';
+    this.status.textContent = 'Already solved. The hidden notes below are open.';
   }
 }
 
@@ -268,10 +275,113 @@ function unlockNote() {
 }
 
 /* -------------------------------------------------------------------------
+   Scrolling: rows that arrive, and a marker that knows where you are
+   ------------------------------------------------------------------------- */
+function revealRows() {
+  if (!canReveal) return;
+
+  const io = new IntersectionObserver(entries => {
+    // Rows that arrive together (a fast scroll, a jump link) flip in reading order.
+    const arriving = entries
+      .filter(e => e.isIntersecting)
+      .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+
+    arriving.forEach((e, i) => {
+      e.target.style.setProperty('--reveal-delay', `${i * ROW_STAGGER_MS}ms`);
+      e.target.classList.add('is-in');
+      io.unobserve(e.target);
+    });
+
+    // Rows already above the viewport (a reload halfway down) just appear.
+    entries
+      .filter(e => !e.isIntersecting && e.boundingClientRect.bottom < 0)
+      .forEach(e => {
+        e.target.classList.add('is-in');
+        io.unobserve(e.target);
+      });
+  }, { rootMargin: '0px 0px -10% 0px' });
+
+  document.querySelectorAll('.entry').forEach(row => io.observe(row));
+}
+
+function trackSection() {
+  const nav = document.querySelector('.topbar__nav');
+  if (!nav) return;
+
+  const pairs = [...nav.querySelectorAll('a[href^="#"]')]
+    .map(link => [link, document.getElementById(link.hash.slice(1))])
+    .filter(([, section]) => section);
+  if (!pairs.length) return;
+
+  const marker = document.createElement('span');
+  marker.className = 'topbar__marker';
+  marker.setAttribute('aria-hidden', 'true');
+  nav.appendChild(marker);
+
+  let current = null;
+
+  const place = () => {
+    if (!current) {
+      marker.classList.remove('is-on');
+      return;
+    }
+    marker.style.setProperty('--marker-x', `${current.offsetLeft}px`);
+    marker.style.setProperty('--marker-w', `${current.offsetWidth}px`);
+    marker.classList.add('is-on');
+  };
+
+  // On narrow phones the nav scrolls sideways; keep the current link visible.
+  const keepInView = link => {
+    if (nav.scrollWidth <= nav.clientWidth) return;
+    const left = link.offsetLeft - 8;
+    const right = link.offsetLeft + link.offsetWidth + 8;
+    const behavior = reducedMotion ? 'auto' : 'smooth';
+    if (left < nav.scrollLeft) nav.scrollTo({ left, behavior });
+    else if (right > nav.scrollLeft + nav.clientWidth) nav.scrollTo({ left: right - nav.clientWidth, behavior });
+  };
+
+  const update = () => {
+    // A section is current once its top passes a line a third of the way down.
+    // The stack strip between Games and About counts as Games, which reads right.
+    const line = window.innerHeight * 0.35;
+    const atEnd = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+    let next = null;
+    for (const [link, section] of pairs) {
+      if (section.getBoundingClientRect().top <= line) next = link;
+    }
+    if (atEnd) next = pairs[pairs.length - 1][0];
+    if (next === current) return;
+
+    if (current) current.removeAttribute('aria-current');
+    current = next;
+    if (current) {
+      current.setAttribute('aria-current', 'location');
+      keepInView(current);
+    }
+    place();
+  };
+
+  let queued = false;
+  window.addEventListener('scroll', () => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => { queued = false; update(); });
+  }, { passive: true });
+  window.addEventListener('resize', place);
+  if (document.fonts) document.fonts.ready.then(place);
+
+  // First placement lands without sliding in from the left edge.
+  update();
+  requestAnimationFrame(() => requestAnimationFrame(() => marker.classList.add('is-live')));
+}
+
+/* -------------------------------------------------------------------------
    Boot
    ------------------------------------------------------------------------- */
 document.addEventListener('DOMContentLoaded', () => {
   revealName();
+  revealRows();
+  trackSection();
 
   const root = document.getElementById('puzzle');
   if (!root) return;

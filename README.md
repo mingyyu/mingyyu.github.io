@@ -7,7 +7,7 @@
 
 ### 🧩 `[ M ] [ I ] [ N ] [ G ]   [ Y ] [ U ]`
 
-Welcome to the source code for my personal portfolio and blog. Built from scratch with clean, lightweight web fundamentals — fast, minimal, and designed with a warm newsprint aesthetic and an interactive word game right at the top.
+Welcome to the source code for my personal portfolio and blog. Built from scratch with plain HTML, CSS and JavaScript (plus Jekyll for the blog). It's fast and minimal, with a warm newsprint look and an interactive word game right at the top.
 
 ---
 
@@ -60,8 +60,15 @@ Publishing a new post is effortless:
 
 | Status | Project | What It Is |
 | :---: | :--- | :--- |
+| 🟨 | **Alpha Connectome** | Solo entry in Wunder Fund's ML forecasting competition *(in progress)*. |
+| 🟨 | [CareLoop SG](https://careloop-sg.onrender.com/) | Daily voice check-ins for seniors with high blood pressure *(Tencent Cloud Hackathon SG 2026)*. |
+| 🟩 | **NiCE Hack 2026** | Side-channel analysis: AES keys recovered from power traces *(NTU NiCE Hack 2026)*. |
+| 🟨 | [AgentShopper](https://agentshopper.streamlit.app/) | Makes product catalogues legible to AI shopping assistants *(LifeHack 2026)*. |
+| 🟨 | [Conversational Shopping Agent](https://github.com/mingyyu/techjam-conversational-search) | Multi-turn shopping agent, 0.977 TechnicalScore *(TikTok TechJam 2026)*. |
+| 🟨 | **SafetyPolice** | Voice-first near-miss reporting with a safety-officer agent *(PSA Code Sprint 2.0)*. |
 | 🟩 | [Brothers Library](https://brotherslibrary.vercel.app/) | Full-stack library management system with loan tracking. |
 | 🟨 | **EcoGuides** | Sustainable lifestyle tracking app *(DSTA BrainHack Finalist)*. |
+| 🟩 | [Duck Dash River Run](https://www.roblox.com/share?code=5fd95b624c86b14ca27e3197275249ec&type=ExperienceDetails) | Red-light, green-light river race on Roblox *(Best Animation, NUS CFG x Garena Hackathon 2026)*. |
 | 🟩 | [Feudal Dominion](https://t.me/FeudalDominionBot) | Text-based empire-building strategy game inside Telegram. |
 | 🟩 | [Wordle Lookalike](https://mingyyu.github.io/wordle-lookalike/) | Five-letter word guessing game built in pure JavaScript. |
 | ⬜ | [Tic-Tac-Toe](https://github.com/mingyyu/simple-tictactoe) | Classic starter game project. |

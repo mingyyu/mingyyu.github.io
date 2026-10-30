@@ -2,9 +2,9 @@
 title: Sorting by wishful thinking
 date: 2026-09-19
 description: >-
-  In CS1101S you write a sort by assuming you already have one. Here are four
-  sorts, drawn so you can watch that assumption pay off, and see what each one
-  costs.
+  CS1101S teaches recursion as wishful thinking: write a sort by assuming the
+  recursive call already works. Watch four sorting algorithms put that idea to
+  work, step by step, and compare what they cost.
 subject: CS1101S
 tags: [Recursion, Sorting, Order of growth]
 styles:
@@ -33,14 +33,14 @@ scripts:
       </span>
     </div>
     <figcaption class="wishbox__cap">
-      Deal with the first number yourself. For the rest, assume the function you&rsquo;re
-      writing already works. Every sort below runs on these same eight numbers.
+      Handle the first number yourself. For the other seven, assume the function you&rsquo;re
+      writing already works. Every sort below runs on this same list of eight.
     </figcaption>
   </figure>
 
   <noscript>
-    <p class="viz-note">The diagrams on this page are drawn with JavaScript. The text reads
-      fine without it, but you&rsquo;ll miss the point of the page.</p>
+    <p class="viz-note">These diagrams need JavaScript to run. You can still read the text without it,
+      though seeing the steps move is half the point.</p>
   </noscript>
 </div>
 
@@ -56,28 +56,28 @@ scripts:
     </div>
 
     <div class="viz-prose">
-      <p>Every sort on this page is built the same way.</p>
+      <p>All four sorts on this page follow the exact same pattern.</p>
       <ol class="recipe">
-        <li><span><strong>Split</strong> the list into something smaller.</span></li>
-        <li><span><strong>Wish.</strong> Sort the smaller pieces by calling the function you&rsquo;re
-          in the middle of writing, and assume it works.</span></li>
-        <li><span><strong>Join</strong> the sorted pieces into one sorted list.</span></li>
+        <li><span><strong>Split</strong> the list into smaller pieces.</span></li>
+        <li><span><strong>Wish.</strong> Sort those pieces by calling the function you&rsquo;re
+          still writing, trusting that it works.</span></li>
+        <li><span><strong>Join</strong> the sorted pieces back into a single sorted list.</span></li>
       </ol>
       <p>
-        Step two is what CS1101S calls wishful thinking. You don&rsquo;t trace the recursive
-        call. You assume it returns the right answer and ask only what&rsquo;s left for you to
-        do. That&rsquo;s easy to say and hard to believe, because you never get to watch it
-        happen. Here you can: every dashed box on this page is a call you&rsquo;re asked to
-        trust, and if you keep scrolling, it opens.
+        CS1101S calls step two wishful thinking. Instead of tracing the recursive call, you
+        trust it to hand back a sorted list and focus only on the step left in front of you.
+        That&rsquo;s easy to say on paper, and much easier to believe once you watch it run.
+        Every dashed box below is a recursive call you take on faith; keep scrolling to open
+        it up.
       </p>
     </div>
 
     <h3 class="viz-h3">Where the work goes</h3>
     <div class="viz-prose">
       <p>
-        The four sorts differ in just two choices. Do you split off one element, or cut the
-        list in two? And do the comparisons happen while splitting, on the way down, or while
-        joining, on the way back up?
+        Two decisions separate the four sorts. First, do you peel off a single element, or
+        halve the list? Second, do you compare elements on the way down while splitting, or on
+        the way back up while joining?
       </p>
     </div>
 
@@ -139,16 +139,16 @@ scripts:
 
     <h3 class="viz-h3">Reading the diagrams</h3>
     <ul class="legend-key">
-      <li><span class="kt kt--plain">4</span>Not looked at yet</li>
-      <li><span class="kt kt--hand">4</span>In hand: the element this call is working on</li>
+      <li><span class="kt kt--plain">4</span>Unseen so far</li>
+      <li><span class="kt kt--hand">4</span>In hand: the tile this call is actively placing</li>
       <li><span class="kt kt--plain kt--ring">4</span>Being compared</li>
-      <li><span class="kt kt--wait">4</span>Set aside, waiting for a call below to return</li>
-      <li><span class="kt kt--done">4</span>Sorted: part of a list some call returned</li>
-      <li><span class="kb kb--wish"></span>A recursive call you&rsquo;re trusting: a wish</li>
-      <li><span class="kb kb--active"></span>The call that&rsquo;s running now</li>
-      <li><span class="kd"></span>One comparison, logged on the row of the call that made it</li>
+      <li><span class="kt kt--wait">4</span>Set aside while waiting on a deeper call</li>
+      <li><span class="kt kt--done">4</span>Sorted: returned by a finished call</li>
+      <li><span class="kb kb--wish"></span>A wish: a recursive call taken on trust</li>
+      <li><span class="kb kb--active"></span>The currently active call</li>
+      <li><span class="kd"></span>One comparison, recorded on the row of the call that ran it</li>
     </ul>
-    <p class="viz-aside">Each row down is one call deeper. Scroll slowly; scroll back up to rewind.</p>
+    <p class="viz-aside">Each row down is one recursive call deeper. Scroll down to step forward, or up to rewind.</p>
 
   </div>
 </section>
@@ -160,96 +160,99 @@ scripts:
   <div class="wrap">
     <div class="sechead">
       <h2 class="sechead__title">Insertion sort</h2>
-      <p class="sechead__note">Split off one, compare on the way back up.</p>
+      <p class="sechead__note">Peel off one, compare on the way back up.</p>
     </div>
     <p class="algo__lead">
-      The version you&rsquo;ve probably written already: take the head off, sort the tail by
-      wishful thinking, then insert the head where it belongs.
+      This is usually the first recursive sort you write: pull off the head, sort the tail by
+      wishful thinking, and slide the head into place.
     </p>
 
     <div class="scrolly">
       <div class="scrolly__steps">
         <div class="step" data-from="i-start">
           <div class="step__body">
-            <p>Start with one call on the whole list. Insertion sort&rsquo;s split is as cheap as a
-              split gets: <code>head(xs)</code> is 5, and <code>tail(xs)</code> is the other seven.</p>
+            <p>We start with a single call on all eight numbers. Splitting here takes almost no work:
+              <code>head(xs)</code> grabs 5, leaving the remaining seven in <code>tail(xs)</code>.</p>
           </div>
         </div>
         <div class="step" data-from="i-wish" data-to="i-sealed">
           <div class="step__body">
-            <p>Here is the wish. Hand the tail to <code>insertion_sort</code> and assume it comes
-              back sorted. You don&rsquo;t trace that call, and you don&rsquo;t need to know how it
-              works yet. The box stays shut.</p>
+            <p>Now make the wish. Pass the seven-element tail to <code>insertion_sort</code> and trust
+              that it returns in order. We don&rsquo;t look inside that call yet; its box stays
+              closed.</p>
           </div>
         </div>
         <div class="step" data-from="i-trust">
           <div class="step__body">
-            <p>Say the wish comes true: seven tiles, in order. All that&rsquo;s left for this call
-              is to fit the 5 in.</p>
+            <p>Once the wish returns those seven tiles in order, this call only has one job left:
+              slot the 5 into the right spot.</p>
           </div>
         </div>
         <div class="step" data-from="i-trust" data-to="i-inserted">
           <div class="step__body">
-            <p><code>insert</code> walks along the sorted list. Each tile smaller than 5 stays in
-              front, <code>pair(head(xs), &hellip;)</code>, and the 5 carries on into the tail.
-              At 6 it stops, because <code>x &lt;= head(xs)</code>, and 5 goes in front of
-              everything left.</p>
-            <p>That&rsquo;s the whole algorithm: one insert, plus trust in a shorter list.</p>
+            <p><code>insert</code> steps through the sorted seven from left to right. Any tile smaller
+              than 5 stays ahead of it via <code>pair(head(xs), &hellip;)</code> while 5 keeps
+              moving into the tail. As soon as it hits 6, <code>x &lt;= head(xs)</code> holds, so 5
+              drops in right before 6 and the rest of the list.</p>
+            <p>That&rsquo;s the entire sort: trust the recursive call on a shorter list, then run a
+              single insert.</p>
           </div>
         </div>
         <div class="step" data-from="i-open" data-to="i-d3">
           <div class="step__body">
-            <p>Now open the box. The call you trusted does exactly the same thing to a list one
-              shorter: set the head aside, wish on the tail. Each row down is one call deeper,
-              and each row has its own box.</p>
+            <p>Now let&rsquo;s look inside the dashed box. That trusted call runs the exact same steps
+              on seven elements: hold the head aside, wish on the remaining six. Every row down
+              goes one call deeper and opens another box.</p>
           </div>
         </div>
         <div class="step" data-from="i-d3" data-to="i-d7">
           <div class="step__body">
-            <p>Eight calls down, the list runs out and the base case answers straight away:
-              <code>None</code> is already sorted.</p>
-            <p>Look at the grey diagonal. Every call has set a number aside and is waiting to
-              insert it. Nothing is sorted yet; all of the work is still owed.</p>
+            <p>After eight levels of splitting, the list is empty and hits the base case:
+              <code>None</code> is trivially sorted.</p>
+            <p>Notice the grey diagonal. Each call is holding one number aside, waiting for the call
+              below it to finish before it can insert. No comparisons have happened yet; all the real
+              work is waiting on the return trip.</p>
           </div>
         </div>
         <div class="step" data-from="i-d7">
           <div class="step__body">
-            <p>That staircase is also the memory bill. The computer has to hold every pending
-              <code>insert</code> at once, one per element: <em>n</em> deferred operations, so
-              &Theta;(n) space.</p>
+            <p>That diagonal also shows the memory cost. Because every call is waiting on the one
+              below it, the machine has to keep <em>n</em> pending <code>insert</code> calls alive at once, taking &Theta;(n) space.</p>
           </div>
         </div>
         <div class="step" data-from="i-d7" data-to="i-u5">
           <div class="step__body">
-            <p>Now the wishes come true, from the bottom up. The deepest call inserts 6 into an
-              empty list. The one above inserts 3 into <code>llist(6)</code>, then 8 goes into
+            <p>Now the calls resolve from the bottom up. The deepest level puts 6 into the empty list.
+              One row up, 3 slips in front of <code>llist(6)</code>, and the next row places 8 into
               <code>llist(3, 6)</code>.</p>
-            <p>So this insertion sort builds its answer from the <em>back</em> of the input.</p>
+            <p>Because the deepest calls finish first, recursive insertion sort actually assembles the
+              sorted list starting from the <em>back</em> of the input.</p>
           </div>
         </div>
         <div class="step" data-from="i-u5" data-to="i-u1">
           <div class="step__body">
-            <p>Each insert walks only as far as it has to. The 1 goes to the front after a single
-              comparison. The 7 has to pass four tiles, and it takes five comparisons to find
-              its spot before 8.</p>
+            <p>Each <code>insert</code> stops as soon as it finds its spot. Tile 1 lands at the front
+              after just one comparison, while 7 steps past four smaller numbers and uses five
+              comparisons before settling in front of 8.</p>
           </div>
         </div>
         <div class="step" data-from="i-u1" data-to="i-u0">
           <div class="step__body">
-            <p>Back at the top, the first call finally inserts 5 into the sorted seven. It&rsquo;s
-              the same move you trusted at the start, and this time you watched the wish come
-              true.</p>
+            <p>At last we reach the top row again, where the original call slots 5 into the seven
+              sorted tiles. It&rsquo;s the exact step we assumed would work at the beginning, only
+              now we&rsquo;ve seen every level beneath it.</p>
           </div>
         </div>
         <div class="step" data-from="i-cost">
           <div class="step__body">
-            <p>Each dot is one comparison. The call at depth <em>k</em> inserts into a list of
-              7&nbsp;&minus;&nbsp;<em>k</em> tiles, so it can make at most that many (the hollow
-              dots).</p>
-            <p>Worst case, a reversed list: 0&nbsp;+&nbsp;1&nbsp;+&nbsp;&#8943;&nbsp;+&nbsp;7&nbsp;=&nbsp;28,
-              a full triangle, &Theta;(n&sup2;). Best case, a list that&rsquo;s already sorted:
-              every insert stops at its first comparison, <em>n</em>&nbsp;&minus;&nbsp;1 in all,
-              &Theta;(n). This list took 19.</p>
+            <p>The dots on the right tally comparisons. A call at depth <em>k</em> inserts into a
+              sorted list of length 7&nbsp;&minus;&nbsp;<em>k</em>, so it does at most that many
+              comparisons (shown as hollow dots).</p>
+            <p>On a reverse-sorted list, every insert walks all the way to the end:
+              0&nbsp;+&nbsp;1&nbsp;+&nbsp;&#8943;&nbsp;+&nbsp;7&nbsp;=&nbsp;28 comparisons, filling
+              the whole triangle for &Theta;(n&sup2;) time. On an already-sorted list, each insert
+              finishes on its first check, taking just <em>n</em>&nbsp;&minus;&nbsp;1 comparisons,
+              or &Theta;(n). Our eight numbers took 19.</p>
           </div>
         </div>
       </div>
@@ -285,66 +288,69 @@ scripts:
   <div class="wrap">
     <div class="sechead">
       <h2 class="sechead__title">Selection sort</h2>
-      <p class="sechead__note">Split off one, compare on the way down.</p>
+      <p class="sechead__note">Peel off one, compare on the way down.</p>
     </div>
     <p class="algo__lead">
-      Same shape, but the work moves to before the wish: find the smallest, take it out, and
-      sort what&rsquo;s left.
+      The call tree has the same shape as insertion sort, except the comparisons happen
+      before the recursive call: scan for the smallest number, pull it out, and sort the rest.
     </p>
 
     <div class="scrolly">
       <div class="scrolly__steps">
         <div class="step" data-from="s-start" data-to="s-found">
           <div class="step__body">
-            <p>Selection sort does its thinking first. <code>smallest</code> reduces the list,
-              keeping the smaller of each pair as it goes. It has to look at every tile, because
-              the smallest could be the last one. Seven comparisons to find the 1.</p>
+            <p>Selection sort pays its comparison cost up front. <code>smallest</code> walks the entire
+              list, keeping the smaller value at each step. Because the minimum could be hiding at
+              the very end, it checks every tile, taking seven comparisons to find 1.</p>
           </div>
         </div>
         <div class="step" data-from="s-found" data-to="s-sealed">
           <div class="step__body">
-            <p>Take the 1 out with <code>remove</code> and hand the other seven to the wish.
-              The box stays shut.</p>
+            <p>Pull 1 out with <code>remove</code> and pass the remaining seven tiles into the
+              recursive wish. Leave the box closed for now.</p>
           </div>
         </div>
         <div class="step" data-from="s-sealed" data-to="s-trust">
           <div class="step__body">
-            <p>Trust it: the seven come back sorted.</p>
+            <p>Take the wish on trust: those seven tiles return in sorted order.</p>
           </div>
         </div>
         <div class="step" data-from="s-trust" data-to="s-paired">
           <div class="step__body">
-            <p>So the join is a single <code>pair</code>: 1 in front of the rest, with nothing to
-              compare. The hard part happened before the wish.</p>
+            <p>Joining is then effortless. A single <code>pair</code> attaches 1 to the front of the
+              sorted seven without a single comparison, since all the work was done before the wish.</p>
           </div>
         </div>
         <div class="step" data-from="s-open" data-to="s-d2">
           <div class="step__body">
-            <p>Open the box and it&rsquo;s the insertion sort staircase again, but mirrored. Each
-              call scans what&rsquo;s left, sets the smallest aside and wishes on the rest. The
-              comparing happens on the way <em>down</em>.</p>
+            <p>Open the dashed box and you get the same staircase as insertion sort, only flipped.
+              Every call searches the remaining tiles, pulls out the smallest, and wishes on the rest.
+              All the comparisons happen on the way <em>down</em>.</p>
           </div>
         </div>
         <div class="step" data-from="s-d2" data-to="s-bottom">
           <div class="step__body">
-            <p>Each scan is one shorter than the last: seven comparisons, then six, then five.</p>
-            <p>By the bottom, the grey diagonal already reads 1 to 8. The order is settled, but
-              every call is still waiting on the <code>pair</code> that puts its number in front.
-              Eight pending operations again: &Theta;(n) space.</p>
+            <p>Each pass scans one fewer tile than the row above it: seven comparisons, then six, then
+              five.</p>
+            <p>By the time we reach the bottom, the grey diagonal already runs from 1 to 8 in order.
+              Even though the positions are decided, all eight calls are still waiting to run
+              <code>pair</code> on the way back up, which still costs &Theta;(n) space.</p>
           </div>
         </div>
         <div class="step" data-from="s-bottom" data-to="s-u0">
           <div class="step__body">
-            <p>The way back up is quick. Each call pairs its number onto whatever came back from
-              below. No comparisons, one step a row.</p>
+            <p>Unwinding the calls is instant. Each row simply pairs its saved minimum onto the front
+              of the list returned from below, with zero comparisons.</p>
           </div>
         </div>
         <div class="step" data-from="s-cost">
           <div class="step__body">
-            <p>The dots make a perfect triangle: 7&nbsp;+&nbsp;6&nbsp;+&nbsp;&#8943;&nbsp;+&nbsp;1&nbsp;=&nbsp;28.
-              It would be exactly the same for any list of eight, because <code>smallest</code>
-              can&rsquo;t stop early. Selection sort is &Theta;(n&sup2;) in every case.</p>
-            <p>Insertion sort&rsquo;s worst case is selection sort&rsquo;s every case.</p>
+            <p>The comparison ledger forms a solid triangle every time:
+              7&nbsp;+&nbsp;6&nbsp;+&nbsp;&#8943;&nbsp;+&nbsp;1&nbsp;=&nbsp;28. Because
+              <code>smallest</code> always scans to the end of the list, the input order never saves
+              a single step. Selection sort takes &Theta;(n&sup2;) in best, average, and worst cases
+              alike.</p>
+            <p>What insertion sort suffers only on a reversed list, selection sort pays on every list.</p>
           </div>
         </div>
       </div>
@@ -378,87 +384,92 @@ scripts:
   <div class="wrap">
     <div class="sechead">
       <h2 class="sechead__title">Merge sort</h2>
-      <p class="sechead__note">Cut in two, compare on the way back up.</p>
+      <p class="sechead__note">Halve the list, compare on the way back up.</p>
     </div>
     <p class="algo__lead">
-      Cut the list in half instead of peeling off one element. That means two wishes, and a
-      join that does real work.
+      Instead of shaving off one element at a time, slice the list down the middle. We make
+      two wishes per call, and do the real work when combining the sorted halves.
     </p>
 
     <div class="scrolly">
       <div class="scrolly__steps">
         <div class="step" data-from="m-start">
           <div class="step__body">
-            <p>Merge sort splits the list down the middle: <code>take</code> the first
-              <code>middle(length(xs))</code> tiles, and <code>drop</code> them to get the rest.</p>
+            <p>Merge sort divides the list into two equal halves: <code>take</code> grabs the first
+              <code>middle(length(xs))</code> tiles, and <code>drop</code> leaves the second half.</p>
           </div>
         </div>
         <div class="step" data-from="m-split" data-to="m-sealed">
           <div class="step__body">
-            <p>Two wishes this time. Assume <code>merge_sort</code> sorts each half, and
-              don&rsquo;t look inside.</p>
+            <p>Now we make two wishes side by side, trusting <code>merge_sort</code> to hand back each
+              four-tile half in order without peeking inside.</p>
           </div>
         </div>
         <div class="step" data-from="m-trust">
           <div class="step__body">
-            <p>Both halves come back sorted. Now, how do you turn two sorted lists into one?</p>
+            <p>Once both four-tile halves come back sorted, we only need a fast way to weave two sorted
+              lists into one.</p>
           </div>
         </div>
         <div class="step" data-from="m-trust" data-to="m-merged">
           <div class="step__body">
-            <p>Zip them. The smallest tile overall must be at the front of one half or the
-              other, so compare the two fronts and take the smaller. Repeat. When one side runs
-              out, the rest of the other goes on as it is.</p>
-            <p>Seven comparisons for eight tiles.</p>
+            <p>We zip them together. Since both halves are already in order, the smallest remaining
+              number has to sit at the front of one of them. Compare the two fronts, take the smaller
+              one, and repeat until one half is empty, then tack on whatever is left of the other.</p>
+            <p>Merging all eight tiles here takes seven comparisons.</p>
           </div>
         </div>
         <div class="step" data-from="m-open" data-to="m-go-3-0">
           <div class="step__body">
-            <p>Now open the boxes, and see what most merge sort diagrams get wrong. The two
-              halves are <em>not</em> sorted side by side. Python evaluates the first argument to
-              <code>merge</code> completely before it starts on the second, so the left half goes
-              all the way down first.</p>
-            <p>The right half waits in the top row, faded. It hasn&rsquo;t even been cut off
-              yet.</p>
+            <p>Opening the boxes reveals something static textbook diagrams usually hide: the two
+              halves don&rsquo;t actually run in parallel. Python finishes evaluating the first
+              argument to <code>merge</code> before touching the second, so execution dives all the
+              way down the left branch first.</p>
+            <p>Meanwhile, the right half sits waiting at the top, dimmed out before it is even split.</p>
           </div>
         </div>
         <div class="step" data-from="m-go-3-0" data-to="m-ret-2-0">
           <div class="step__body">
-            <p>At the bottom, a single tile is already sorted, so the base case hands it straight
-              back. The first merge anywhere is 5 and 2 becoming <code>llist(2, 5)</code>.</p>
+            <p>At the bottom of the left branch, a one-element list is already sorted and returns
+              immediately. The very first merge on the page combines 5 and 2 into
+              <code>llist(2, 5)</code>.</p>
           </div>
         </div>
         <div class="step" data-from="m-ret-2-0" data-to="m-ret-1-0">
           <div class="step__body">
-            <p>One level up, the other quarter goes down, comes back as <code>llist(4, 7)</code>,
-              and the two merge. The left half of the whole list is done: 2&nbsp;4&nbsp;5&nbsp;7.</p>
+            <p>Stepping back up one level, the second pair splits, returns as
+              <code>llist(4, 7)</code>, and merges with the first pair to finish the entire left
+              half: 2&nbsp;4&nbsp;5&nbsp;7.</p>
           </div>
         </div>
         <div class="step" data-from="m-ret-1-0" data-to="m-ret-1-4">
           <div class="step__body">
-            <p>Only now does the right half start, and it repeats the pattern exactly.</p>
+            <p>With the left half complete, execution finally starts down the right half and follows
+              the exact same sequence.</p>
           </div>
         </div>
         <div class="step" data-from="m-ret-1-4" data-to="m-ret-0-0">
           <div class="step__body">
-            <p>Last comes the merge you trusted at the very beginning.</p>
+            <p>Everything finishes with the top-level merge we took on faith at the start.</p>
           </div>
         </div>
         <div class="step" data-from="m-cost">
           <div class="step__body">
-            <p>Read the ledger by row. Each level merges all eight tiles between its calls, and
-              every comparison places one tile, so a level costs fewer than <em>n</em>
-              comparisons. Halving 8 reaches 1 after log<sub>2</sub>&nbsp;8&nbsp;=&nbsp;3 levels.</p>
-            <p><em>n</em> per level times log&nbsp;<em>n</em> levels: &Theta;(n log n). The work is a
-              short, wide rectangle instead of a triangle, whatever order the input came in.</p>
+            <p>Look at the comparison ledger row by row. Across any single level of the tree, the calls
+              together merge all eight tiles, and each comparison places one tile into its merged
+              list, so a level costs fewer than <em>n</em> comparisons. Halving eight elements reaches
+              single tiles in log<sub>2</sub>&nbsp;8&nbsp;=&nbsp;3 levels.</p>
+            <p>At most <em>n</em> comparisons across log&nbsp;<em>n</em> levels gives &Theta;(n log n)
+              time. Instead of a deep triangle, the ledger forms a shallow rectangle regardless of
+              how the input was ordered.</p>
           </div>
         </div>
         <div class="step" data-from="m-cost">
           <div class="step__body">
-            <p>Space is subtler. The dashed boxes are the calls waiting at any moment, and there
-              are never more than log&nbsp;<em>n</em> of them. But <code>merge</code> is a
-              recursive process too: the final merge leaves up to <em>n</em> <code>pair</code>s
-              pending. Written this way, merge sort still needs &Theta;(n) space.</p>
+            <p>Memory is a bit subtler. Only log&nbsp;<em>n</em> dashed recursive calls are ever active
+              at once, because the left branch finishes before the right branch starts. However, a
+              recursive <code>merge</code> stacks up to <em>n</em> pending <code>pair</code> calls
+              during the final combine, so this implementation still uses &Theta;(n) space.</p>
           </div>
         </div>
       </div>
@@ -501,83 +512,84 @@ scripts:
   <div class="wrap">
     <div class="sechead">
       <h2 class="sechead__title">Quicksort</h2>
-      <p class="sechead__note">Cut in two, compare on the way down.</p>
+      <p class="sechead__note">Halve the list, compare on the way down.</p>
     </div>
     <p class="algo__lead">
-      This one isn&rsquo;t among the three from the course, but it fills the last square of the
-      map. It&rsquo;s merge sort turned inside out: the split does all the comparing, and the
-      join does none.
+      CS1101S doesn&rsquo;t cover quicksort alongside the first three, but it completes our
+      two-by-two grid. Think of it as merge sort flipped upside down: all comparisons happen while
+      splitting, so joining is free.
     </p>
 
     <div class="scrolly">
       <div class="scrolly__steps">
         <div class="step" data-from="q-start" data-to="q-pivot">
           <div class="step__body">
-            <p>Pick a pivot. The simplest choice is the head: 5.</p>
+            <p>First, choose a pivot element. Taking the head of the list gives us 5.</p>
           </div>
         </div>
         <div class="step" data-from="q-pivot" data-to="q-pass1">
           <div class="step__body">
-            <p>The first <code>filter</code> walks the tail and sends everything smaller than 5
-              down to the left.</p>
+            <p>One call to <code>filter</code> scans the tail and gathers every tile smaller than 5
+              into the left group.</p>
           </div>
         </div>
         <div class="step" data-from="q-pass1" data-to="q-split">
           <div class="step__body">
-            <p>The second <code>filter</code> walks the whole tail <em>again</em> to collect
-              everything else. That&rsquo;s two passes where one would do, but the order of
-              growth won&rsquo;t notice.</p>
-            <p>Now look where the 5 lands. Everything to its left is smaller and everything to its
-              right is larger, so it&rsquo;s already in its final place.</p>
+            <p>A second <code>filter</code> scans the tail <em>again</em> to gather everything at least
+              as large as 5. Walking the tail twice does extra work, though it leaves the asymptotic
+              order of growth unchanged.</p>
+            <p>Notice where 5 ends up. Because every smaller number went left and every larger number
+              went right, the pivot is already sitting in its final sorted position.</p>
           </div>
         </div>
         <div class="step" data-from="q-sealed" data-to="q-trust">
           <div class="step__body">
-            <p>Wish both sides sorted.</p>
+            <p>Make two wishes to sort the left and right groups.</p>
           </div>
         </div>
         <div class="step" data-from="q-trust" data-to="q-joined">
           <div class="step__body">
-            <p>The join is <code>append</code>, and it compares nothing. The split already put
-              every tile on the right side of the pivot, so the pieces just stack back
-              together.</p>
+            <p>Joining uses <code>append</code> without a single comparison. Since partitioning already
+              separated small from large around the pivot, we simply concatenate the sorted left
+              group, the pivot, and the sorted right group.</p>
           </div>
         </div>
         <div class="step" data-from="q-open" data-to="q-ret-1-0">
           <div class="step__body">
-            <p>Open the boxes. Each side picks its own pivot and splits again. The pieces
-              aren&rsquo;t halves; they&rsquo;re whatever size the pivot makes them: 4 and 3 here,
-              then 1 and 2.</p>
-            <p>Once a pivot turns green, it never moves again.</p>
+            <p>Open the dashed boxes and each subgroup chooses its own pivot to partition again. Unlike
+              merge sort, the split sizes depend entirely on the pivot: 4 and 3 on the first split,
+              then 1 and 2 on the next.</p>
+            <p>Every time a pivot turns green, it is locked in place for the rest of the run.</p>
           </div>
         </div>
         <div class="step" data-from="q-ret-1-0" data-to="q-done">
           <div class="step__body">
-            <p>On this list the splits come out fairly even, the deepest call is only three
-              levels down, and the whole sort costs 26 comparisons: two for each tile at each
-              level it passes through.</p>
+            <p>Because our pivots happen to split this list fairly evenly, the tree goes only three
+              levels deep and finishes in 26 comparisons (two passes over the remaining tail at each
+              level).</p>
           </div>
         </div>
         <div class="step" data-from="w-start" data-to="w-go-7-7">
           <div class="step__body">
-            <p>Now give it a list that&rsquo;s already sorted. The pivot is always the smallest
-              thing left, so every other tile goes right and the left side is always empty.</p>
-            <p>The tree turns into a staircase eight calls deep. It&rsquo;s selection sort in
-              disguise, comparing twice as often.</p>
+            <p>Watch what happens if the input arrives already sorted. Because we always pick the head,
+              every pivot is the smallest number left, sending all remaining tiles to the right and
+              leaving the left branch empty.</p>
+            <p>The balanced tree collapses into an eight-level staircase. Quicksort degrades into
+              selection sort, doing twice as many comparisons because of the two filter passes.</p>
           </div>
         </div>
         <div class="step" data-from="w-go-7-7" data-to="w-ret-0-0">
           <div class="step__body">
-            <p>On the way back up, each <code>append</code> just stacks the pieces.</p>
+            <p>Returning up the chain still just runs <code>append</code> at each level.</p>
           </div>
         </div>
         <div class="step" data-from="w-cost">
           <div class="step__body">
-            <p>Even splits give about log&nbsp;<em>n</em> levels of <em>n</em> work each:
-              &Theta;(n log n). A pivot that always lands at one end gives <em>n</em> levels:
-              &Theta;(n&sup2;), here 56 comparisons against 26.</p>
-            <p>With the head as pivot, the input you&rsquo;d expect to be easiest is the worst
-              possible one. That&rsquo;s why real quicksorts pick their pivot at random.</p>
+            <p>Balanced pivots keep the tree to about log&nbsp;<em>n</em> levels with linear work per
+              level, giving &Theta;(n log n). Pivots that hug the ends stretch the tree to
+              <em>n</em> levels and &Theta;(n&sup2;) work: 56 comparisons here instead of 26.</p>
+            <p>Picking the first element as the pivot makes an already-sorted list the worst possible
+              input. Production quicksorts avoid that trap by choosing a random pivot.</p>
           </div>
         </div>
       </div>
@@ -609,14 +621,15 @@ scripts:
   <div class="wrap">
     <div class="sechead">
       <h2 class="sechead__title">What it costs</h2>
-      <p class="sechead__note">Counted in comparisons, the one step every sort here shares.</p>
+      <p class="sechead__note">Measured in element comparisons, the basic operation all four algorithms share.</p>
     </div>
 
     <div class="viz-prose">
       <p>
-        Time first. The figures below run all four sorts on a list of 32 and draw the work the
-        way the ledgers above did: one row per level of recursion, one square per comparison.
-        The area is the time. Change the order of the input and watch the shapes.
+        Let&rsquo;s look at time first. Below, all four algorithms sort 32 numbers and plot
+        their comparisons the same way the ledgers did above: one row per recursion level, one
+        square per comparison. Total area equals total time. Switch the input order to see how
+        each shape reacts.
       </p>
     </div>
 
@@ -630,9 +643,10 @@ scripts:
     <figure class="fig">
       <div class="shapes" data-shapes></div>
       <figcaption class="fig__cap">
-        Sorting 32 numbers. Triangles are &Theta;(n&sup2;); short, wide rectangles are
-        &Theta;(n log n). On an already-sorted list, insertion sort&rsquo;s triangle collapses
-        to a line and quicksort&rsquo;s doubles. Selection sort doesn&rsquo;t change at all.
+        Comparing 32 numbers across the four sorts. Tall triangles show &Theta;(n&sup2;) work;
+        flat rectangles show &Theta;(n log n). Switch to a sorted input and insertion sort
+        shrinks to a thin line, quicksort balloons to a double-wide triangle, and selection sort
+        stays identical.
       </figcaption>
     </figure>
 
@@ -643,28 +657,29 @@ scripts:
         <div class="growth__tip" data-tip hidden></div>
       </div>
       <figcaption class="fig__cap">
-        Total comparisons as the list grows from 2 to 100 (shuffled lists average 16 shuffles).
-        Two curves bend upward and two stay nearly straight. Hover, or focus the chart and use
-        the arrow keys, for exact counts.
+        Comparison counts as list length grows from 2 to 100 (shuffled inputs average 16 random
+        runs). Two curves bend sharply upward while the other two grow almost linearly. Hover
+        over the chart, or tab to focus and use the arrow keys, to read exact numbers.
       </figcaption>
     </figure>
 
     <h3 class="viz-h3">Space</h3>
     <div class="viz-prose">
       <p>
-        Space in the CS1101S sense means how many deferred operations the computer has to hold
-        at the deepest point. Written this way, all four sorts need &Theta;(n), for different
-        reasons.
+        In CS1101S, space complexity counts the maximum number of deferred operations waiting on
+        the call stack at once. Under these pure functional implementations, all four algorithms
+        use &Theta;(n) space, each for its own reason.
       </p>
       <ul class="viz-list">
-        <li>Insertion sort holds one pending <code>insert</code> per element: the grey diagonal.</li>
-        <li>Selection sort holds one pending <code>pair</code> per element: the same diagonal,
-          already in order.</li>
-        <li>Merge sort&rsquo;s own calls are only log&nbsp;<em>n</em> deep, but <code>merge</code>
-          is a recursive process, and the last merge leaves up to <em>n</em> <code>pair</code>s
-          waiting.</li>
-        <li>Quicksort holds the pending <code>append</code>s along one path of calls. On an
-          already-sorted list that path is <em>n</em> long.</li>
+        <li>Insertion sort stacks up one deferred <code>insert</code> per element along its grey
+          diagonal.</li>
+        <li>Selection sort stacks up one deferred <code>pair</code> per element along the same
+          diagonal, even though the values are already chosen in order.</li>
+        <li>Merge sort keeps at most log&nbsp;<em>n</em> recursive sort calls open at once, but its
+          recursive <code>merge</code> helper builds a chain of up to <em>n</em> waiting
+          <code>pair</code> calls on the final pass.</li>
+        <li>Quicksort holds one deferred <code>append</code> per active level of recursion, which
+          reaches <em>n</em> levels deep when given an already-sorted list.</li>
       </ul>
     </div>
 
@@ -727,7 +742,7 @@ scripts:
         </tbody>
       </table>
     </div>
-    <p class="viz-aside">The last column follows the input chosen above.</p>
+    <p class="viz-aside">The final column updates to match whichever input order you select above.</p>
 
   </div>
 </section>
@@ -744,10 +759,10 @@ scripts:
 
     <div class="viz-prose">
       <p>
-        Three numbers can arrive in 3! = 6 different orders, and a sort has to tell all six
-        apart. Each comparison has two outcomes, so <em>k</em> comparisons can tell apart at
-        most 2<sup><em>k</em></sup> orders. Six orders need at least three comparisons, and here
-        they are:
+        Three items can be arranged in 3! = 6 possible permutations, and a working sort has to
+        distinguish all six. Because a single comparison branches only two ways, <em>k</em>
+        comparisons can separate at most 2<sup><em>k</em></sup> permutations. Separating six
+        outcomes therefore takes at least three comparisons, shown in the decision tree below:
       </p>
     </div>
 
@@ -787,28 +802,29 @@ scripts:
         </g>
       </svg>
       <figcaption class="fig__cap">
-        Every way of sorting three things by comparing is a tree like this one. Six leaves need
-        a tree at least &lceil;log<sub>2</sub>&nbsp;6&rceil;&nbsp;=&nbsp;3 levels deep.
+        Any comparison-based sort on three elements traces out a binary decision tree like this
+        one. Reaching six distinct leaves requires a depth of at least
+        &lceil;log<sub>2</sub>&nbsp;6&rceil;&nbsp;=&nbsp;3 comparisons.
       </figcaption>
     </figure>
 
     <div class="viz-prose">
       <p>
-        For <em>n</em> numbers you need 2<sup><em>k</em></sup> &ge; <em>n</em>!, so
-        <em>k</em> &ge; log<sub>2</sub>(<em>n</em>!), and log<sub>2</sub>(<em>n</em>!) grows like
-        <em>n</em>&nbsp;log<sub>2</sub>&nbsp;<em>n</em>. No sort that works by comparing can do
-        better in the worst case. Merge sort is already there.
+        Generalising to <em>n</em> elements requires 2<sup><em>k</em></sup> &ge; <em>n</em>!,
+        meaning <em>k</em> &ge; log<sub>2</sub>(<em>n</em>!), which grows asymptotically as
+        <em>n</em>&nbsp;log<sub>2</sub>&nbsp;<em>n</em>. No comparison sort can beat that bound
+        in the worst case, and merge sort already matches it.
       </p>
       <p>
-        Faster sorts get there by not comparing at all. If you know your numbers are small
-        whole numbers below <em>k</em>, you can count how many of each there are and write them
-        back out in order. That&rsquo;s counting sort, &Theta;(n + k), and it only works because
-        it knows something about the numbers.
+        Beating <em>n</em>&nbsp;log&nbsp;<em>n</em> means skipping element-to-element comparisons
+        altogether. If your input consists of small integers bounded by <em>k</em>, you can
+        simply tally how often each number appears and write them out in order. That algorithm is
+        counting sort, running in &Theta;(n + k) time by exploiting the structure of the keys.
       </p>
     </div>
 
     <aside class="bogo" data-bogo>
-      <p class="bogo__intro">And for completeness, the other end of the scale.</p>
+      <p class="bogo__intro">And to round things out, here is the opposite extreme.</p>
       <pre class="bogo__code"><code>def bogosort(xs):
     while not is_sorted(xs):
         xs = shuffle(xs)

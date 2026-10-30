@@ -7,11 +7,11 @@
 # copies it through byte for byte and never touches it.
 # ---------------------------------------------------------------------------
 
-title: Ming Yu — Index
+title: Ming Yu
 description: >-
-  Undergraduate in Singapore building full-stack systems. A library that
-  tracks real loans, an empire game that runs inside a Telegram chat, and a
-  few small things in between.
+  Ng Ming Yu is a Computer Science undergraduate at NUS building practical
+  software, AI agents, and games. View shipped projects, hackathon work, and
+  notes.
 url: https://mingyyu.github.io
 baseurl: ""
 
